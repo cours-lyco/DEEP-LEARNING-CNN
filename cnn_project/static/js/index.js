@@ -31,6 +31,8 @@ window.global_image_green_channel_path = null; //for channels images path
 window.global_image_blue_channel_path = null; //for channels images path
 
 window.global_images_array = null; //for channels images path
+window.global_images_grey_scale_array_path = null
+window.global_images_grey_scale_array = null
 window.global_reduce_uploaded_image = false; //for channels images path
 
 window.global_grid = true //show grid or not
@@ -39,7 +41,7 @@ window.global_image_file_height = null
 
 window.global_image_file_width_copy = null;
 window.global_image_file_height_copy = null;
-
+window.is_grey_scale_image_active = false;
 window.global_svg_grid = null; //GRID SVG ELEMENT , draw grid, zom in, zoom out
 
 window.global_tile_width = 25
@@ -48,6 +50,16 @@ window.global_tile_width_copy = 25
 window.global_zoom_in = 1.1
 window.global_zoom_out = 1.1
 
+window.global_clicked_pixel = null
+window.global_kernel_shape = null  //kernel square
+window.global_kernel_shape_show = true //show or hide kernel
+
+window.global_image_xtop_left = null;
+window.global_image_ytop_left = null;
+
+
+window.global_kernel_array = null;
+window.global_kernel_file = null;
 
 //CONSOLE INPUT
 var console_val = document.getElementById("console")
@@ -311,6 +323,9 @@ $("#upload_file").change(function () {
             files_path = JSON.parse(rdata[3])
             global_images_array = JSON.parse( rdata[4] )
 
+            global_images_grey_scale_array_path = rdata[5]
+            global_images_grey_scale_array = JSON.parse( rdata[6])
+
             global_tile_width = global_tile_width_copy
             global_image_file_width = global_image_file_width_copy
             global_image_file_height = global_image_file_height_copy
@@ -394,6 +409,71 @@ $("#upload_file").change(function () {
   });
 
 });//end change
+
+//---------------------------------------------------------------------------------------//
+//                                    GREY SCALE
+//---------------------------------------------------------------------------------------//
+$("#cnn-grey-scale").click(function(e){
+      e.preventDefault()
+
+      if(!is_grey_scale_image_active){
+        is_grey_scale_image_active = true;
+        $(".upload-image-container img").attr('src', "/media/" +localStorage.getItem('original_image'))
+        //console.log("get local:", "/media/" +localStorage.getItem('original_image'))
+        return false;
+      }
+      $(".upload-image-container img").empty()
+      $(".upload-image-container img").attr('src', '/'+global_images_grey_scale_array_path)
+
+        const grey_scale_dimensions = [   global_images_grey_scale_array.length,   global_images_grey_scale_array[0].length,   global_images_grey_scale_array[0][0].length ]; //[276, 182, 2]
+
+        console.log("grey scale: ",grey_scale_dimensions)
+
+      var d = global_images_grey_scale_array;
+      var offset_x = parseInt(1.25*global_image_file_width)
+      var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+      for (let i=0; i< grey_scale_dimensions[0]; i += global_tile_width){
+        pixel_array += '<li style="list-style-type:none;">'
+        for (let j = 0; j< grey_scale_dimensions[1]; j += global_tile_width){
+
+            var pixel_id = "rgb_" + i + '_' + j
+            pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
+            colors = ['red', 'green', 'blue']
+          if(typeof grey_scale_dimensions[2] !== 'undefined'){
+            for (let k=0; k< grey_scale_dimensions[2]; k++ ){
+              var dd = d[i][j][k];
+              if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+
+              if(k == 0){
+              pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
+              }
+              if(k == 1){
+              pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
+              }
+              if(k == 2){
+              pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
+              }
+            }
+        }//undefined
+        else {
+          var dd = d[i][j];
+          if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+          pixel_array += '<span class="rgb_red_class" style="color:rgb(120, 121, 128); list-style-type:none;">'+ dd  +',</span>'
+        }//else
+            pixel_array += '</span>'
+
+        }//j
+        pixel_array += '</li>'
+      }
+      pixel_array += '</ul>'
+      //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+      $('.image-channels').html(pixel_array)
+      $(".rgb_class").css("font-size", '1.0em');
+      //is_grey_scale_image_active = false;
+})
+
+
+
 //--------------------------------------------------------------------------------------//
 //                                             DRAW GRID
 //---------------------------------------------------------------------------------------
@@ -419,11 +499,15 @@ $('#cnn-image-grid').click(function(e){
                     var y_clicked = parseInt(y/global_tile_width)
                     var x_clicked = parseInt(x/global_tile_width)
 
+
                     //console.log("xclicked: "+ x_clicked +", yclicked: " + y_clicked)
 
                     $(".rgb_class").css('font-size', '1.0em')
                     var norm_xclicked = x_clicked * global_tile_width_copy
                     var norm_yclicked = y_clicked * global_tile_width_copy
+                    if(global_clicked_pixel){global_clicked_pixel.remove()}
+
+                    draw_pixel(norm_xclicked ,norm_yclicked);
 
                     $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
 
@@ -459,6 +543,7 @@ $('#cnn-image-grid').click(function(e){
 
          if(global_grid){global_grid = false;}
          else { $(".lines").remove() ; global_grid = true}
+         //console.log(s(".rgb_class"))
 })//click
 
 //----------------------------------------------------------------------------------------
@@ -510,8 +595,8 @@ $(document).on('click', "#display_red_channel", function (e) {
 
 
                       $(".rgb_class").css('font-size', '1.0em')
-                      var norm_xclicked = x_clicked * global_tile_width
-                      var norm_yclicked = y_clicked * global_tile_width
+                      var norm_xclicked = x_clicked * global_tile_width_copy
+                      var norm_yclicked = y_clicked * global_tile_width_copy
 
                       $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
                   })
@@ -594,8 +679,8 @@ $(".upload-image-container").on('click', '#display_green_channel' ,function(e){
 
 
                           $(".rgb_class").css('font-size', '1.0em')
-                          var norm_xclicked = x_clicked * global_tile_width
-                          var norm_yclicked = y_clicked * global_tile_width
+                          var norm_xclicked = x_clicked * global_tile_width_copy
+                          var norm_yclicked = y_clicked * global_tile_width_copy
 
                           $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
                       })
@@ -682,8 +767,8 @@ $(".upload-image-container").on('click', '#display_blue_channel' ,function(e){
 
 
                       $(".rgb_class").css('font-size', '1.0em')
-                      var norm_xclicked = x_clicked * global_tile_width
-                      var norm_yclicked = y_clicked * global_tile_width
+                      var norm_xclicked = x_clicked * global_tile_width_copy
+                      var norm_yclicked = y_clicked * global_tile_width_copy
 
                       $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
                   })
@@ -728,6 +813,7 @@ $(".upload-image-container").on('click', '#display_original_image' ,function(e){
     e.preventDefault()
     original_image =  localStorage.getItem('original_image');
     //global_grid = !global_grid
+    is_grey_scale_image_active = false;
 
     $(".upload-image-container").empty()
     $(".upload-image-container").empty()
@@ -770,8 +856,8 @@ $(".upload-image-container").on('click', '#display_original_image' ,function(e){
 
 
                     $(".rgb_class").css('font-size', '1.0em')
-                    var norm_xclicked = x_clicked * global_tile_width
-                    var norm_yclicked = y_clicked * global_tile_width
+                    var norm_xclicked = x_clicked * global_tile_width_copy
+                    var norm_yclicked = y_clicked * global_tile_width_copy
 
                     $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
                 })
@@ -823,90 +909,90 @@ $("#build_kernel").click(function( e ){
     console.log(uploded_image_url)
     if ( ! uploded_image_url) {console.error("Please, upload image before")}
 
-    $('.image-channels .pixel-array-displayed').css({"background-color": "yellow", "font-size": "30%"});
-    var width = 120;
-    var height = 120;
+    //$('.image-channels .pixel-array-displayed').css({"background-color": "yellow", "font-size": "30%"});
+    // get x coord
+    var kernel_array = [
+        -1,  7,  5,
+         0, -1, -1,
+         8,  7, -1
+     ]
 
-    var kernel_xstart = 80
-    var kernel_ystart = 70
-
-    var gridGraph = d3.select('.upload-image-container')
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-
-            // the yaxiscoorddata gives the y coordinates
-         // for horizontal lines ("x1" = 25 and, "x2"=width-25)
-         var yaxiscoorddata = d3.range(0, height + 1  , global_tile_width);
-
-         // the xaxiscoorddata gives the x coordinates
-         // for vertical lines ("y1" = 25 and, "y2"=height-25)
-         var xaxiscoorddata = d3.range(0, width + 1 , global_tile_width);
-
-
-         // Using the xaxiscoorddata to generate vertical lines.
-         gridGraph.selectAll("line.vertical")
-         .data(xaxiscoorddata)
-         .enter().append("svg:line")
-         .attr("x1", function(d){return d;})
-         .attr("y1", 25)
-         .attr("x2", function(d){return d;})
-         .attr("y2", height-25)
-         .style("stroke", "rgb(6,120,155)")
-         .style("stroke-width", 2)
-          .style("fill", "rgba(198, 45, 205, 0.8)" )
-
-
-         // Using the yaxiscoorddata to generate horizontal lines.
-         gridGraph.selectAll("line.horizontal")
-         .data(yaxiscoorddata)
-         .enter().append("svg:line")
-         .attr("x1", 25)
-         .attr("y1", function(d){return d;})
-         .attr("x2", width-25)
-         .attr("y2", function(d){return d;})
-         .style("stroke", "rgb(6,120,155)")
-         .style("stroke-width", 2)
-         .style("fill", "rgba(198, 45, 205, 0.8)" )
-
+    if(global_kernel_shape_show){
+    draw_kernel(  global_image_xtop_left ,   global_image_ytop_left , kernel_array)
+    global_kernel_shape_show = false
+  } else {
+      global_kernel_shape.remove()
+      global_kernel_shape_show = true;
+  }
     return false;
 
 
 })//end click
 
-//----------------------------------------------------------------------------------------------
-//                                GET PIXEL COORDINATES
-//-----------------------------------------------------------------------------------------------
-/*$(".upload-image-container").on('click', '#image-upload', function(evt){
+//---------------------------------------------------------------------------------------
+//                                CONVOLUTION
+//--------------------------------------------------------------------------------------
+$("#convolution").click (function(evt){
     evt.preventDefault()
-console.log("pixel")
-    var e = evt.target;
-    var dim = e.getBoundingClientRect();
-    var x = evt.clientX - dim.left;
-    var y = evt.clientY - dim.top;
+    console.log("convolution")
+    var kernel_array = [
+        -1,  7,  5,
+         0, -2, -3,
+         8,  7, -4
+     ]
 
-    var img_width  =    global_image_file_width;
-    var img_height  =   global_image_file_height;
+    var num_row = parseInt(global_image_file_height/global_tile_width)
+    var num_col = parseInt(global_image_file_width/global_tile_width)
 
-    var x_grille = Math.round(x/global_grid)
-    var y_grille = Math.round(y/global_grid)
-    console.log("x_grille: ", x_grille)
-    console.log("y_grille: ", y_grille)
+    var x_top_left = global_image_xtop_left
+    var y_top_left = global_image_ytop_left
 
-    const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
+    var xx_top_left = global_image_xtop_left
+    var yy_top_left = global_image_ytop_left
 
-    var x_prime = parseInt( (x/global_image_file_width) * dimensions[0])
-    var y_prime = parseInt( (y/global_image_file_width) * dimensions[1])
+    var row = 0;
+    var col = 0;
 
-    if (global_remember_x && global_remember_y){
-      $("#rgb_" + global_remember_x + '_' + global_remember_y).css('font-size', '1.2em')
-    }
-    $("#rgb_" + x_prime + '_' + y_prime).css('font-size', '4.2em')
+    function processData(kernel_array, callback){
 
-    global_remember_x = x_prime
-    global_remember_y = y_prime
+    var inte = setInterval(() => {
+        x_top_left = xx_top_left + col * global_tile_width
+        y_top_left = yy_top_left + row * global_tile_width
 
-    //alert("x: "+x+" y:"+y);
+        if(global_kernel_shape){global_kernel_shape.remove()}
+        //console.log("row: "+row +" ,col: "+col);
+        draw_kernel(x_top_left, y_top_left, kernel_array)
+        col += 1;
+
+        if(col > num_col - 3){ row = row + 1; col = 0; x_top_left = xx_top_left; y_top_left=yy_top_left + row*global_tile_width }
+        if(row > num_row-3){ clearInterval(inte); }
+
+        if(typeof callback == "function"){
+          callback()
+        }
+
+    }, 130)}
+
+    processData(kernel_array, () => {
+          $(".upload-image-container img").attr('src', '/'+global_kernel_file)
+    })
+
+
+
+    $.ajax({
+      url: "/cnn-convolution-kernel",
+      data: { "kernel_array": [[-1, -2, -1],    [0, 0, 0],     [1, 2, 1]  ] },
+      type: 'post',
+       cache:  false,
+      success: function (data) {
+          data = JSON.parse(data)
+          
+          global_kernel_file = data[0]
+          global_kernel_array = data[1]
+      },
+      errr: function(err) {  console.error(err)  }
+  })//$.ajax
+
 })//$ on click  */
 
 
@@ -971,6 +1057,64 @@ $(".upload-image-container").on('click', '#zoom-in', function(evt){
 
     //var global_tile_width = 25;
 
+    if(is_grey_scale_image_active){
+
+      $(".upload-image-container img").empty()
+      $(".upload-image-container img").attr('src', '/'+global_images_grey_scale_array_path)
+
+      var  grey_scale_dimensions = []
+        if(global_images_grey_scale_array[0][0]){
+               grey_scale_dimensions = [   global_images_grey_scale_array.length,   global_images_grey_scale_array[0].length ]; //[276, 182, 2]
+        }
+        else{
+         grey_scale_dimensions = [   global_images_grey_scale_array.length,   global_images_grey_scale_array[0].length,   global_images_grey_scale_array[0][0].length ];} //[276, 182, 2]
+
+        console.log("grey scale: ",grey_scale_dimensions)
+
+      var d = global_images_grey_scale_array;
+      var offset_x = parseInt(1.25*global_image_file_width)
+      var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+      for (let i=0; i< grey_scale_dimensions[0]; i += global_tile_width){
+        pixel_array += '<li style="list-style-type:none;">'
+        for (let j = 0; j< grey_scale_dimensions[1]; j += global_tile_width){
+
+            var pixel_id = "rgb_" + i + '_' + j
+            pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
+            colors = ['red', 'green', 'blue']
+          if(typeof grey_scale_dimensions[2] !== 'undefined'){
+            for (let k=0; k< grey_scale_dimensions[2]; k++ ){
+              var dd = d[i][j][k];
+              if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+
+              if(k == 0){
+              pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
+              }
+              if(k == 1){
+              pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
+              }
+              if(k == 2){
+              pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
+              }
+            }
+        }//undefined
+        else {
+          if(d[i] && d[i][j]){
+          var dd = d[i][j];
+          if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+          pixel_array += '<span class="rgb_red_class" style="color:rgb(120, 121, 128); list-style-type:none;">'+ dd  +',</span>'}
+        }//else
+            pixel_array += '</span>'
+
+        }//for let j
+        pixel_array += '</li>'
+      }//for let i
+      pixel_array += '</ul>'
+      //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+      $('.image-channels').html(pixel_array)
+      $(".rgb_class").css("font-size", '1.0em');
+      return false;
+    }
+
 
     var d = global_images_array;
 
@@ -1028,11 +1172,12 @@ $(".upload-image-container").on('click', '#zoom-in', function(evt){
               .attr('id', 'svg_id')
               .on('click', function(){
                 // get x coord
-                var x = d3.event.pageX - document.getElementById('svg_id').getBoundingClientRect().x
-                var y = d3.event.pageY - document.getElementById('svg_id').getBoundingClientRect().y
+                global_image_xtop_left = d3.event.pageX - document.getElementById('svg_id').getBoundingClientRect().x
 
-                  var y_clicked = parseInt(y/global_tile_width)
-                  var x_clicked = parseInt(x/global_tile_width)
+                global_image_ytop_left = d3.event.pageY - document.getElementById('svg_id').getBoundingClientRect().y
+
+                  var y_clicked = parseInt(  global_image_ytop_left/global_tile_width)
+                  var x_clicked = parseInt(  global_image_xtop_left/global_tile_width)
 
 
                   $(".rgb_class").css('font-size', '1.0em')
@@ -1083,6 +1228,59 @@ $(".upload-image-container").on('click', '#zoom-out', function(evt){
     $(".upload-image-container img").css('width', global_image_file_width )
     $(".upload-image-container img").css('height', global_image_file_height )
     global_tile_width = global_tile_width / global_zoom_in
+
+    if(is_grey_scale_image_active){
+
+      $(".upload-image-container img").empty()
+      $(".upload-image-container img").attr('src', '/'+global_images_grey_scale_array_path)
+
+        const grey_scale_dimensions = [   global_images_grey_scale_array.length,   global_images_grey_scale_array[0].length,   global_images_grey_scale_array[0][0].length ]; //[276, 182, 2]
+
+        console.log("grey scale: ",grey_scale_dimensions)
+
+      var d = global_images_grey_scale_array;
+      var offset_x = parseInt(1.25*global_image_file_width)
+      var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+      for (let i=0; i< grey_scale_dimensions[0]; i += global_tile_width){
+        pixel_array += '<li style="list-style-type:none;">'
+        for (let j = 0; j< grey_scale_dimensions[1]; j += global_tile_width){
+
+            var pixel_id = "rgb_" + i + '_' + j
+            pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
+            colors = ['red', 'green', 'blue']
+          if(typeof grey_scale_dimensions[2] !== 'undefined'){
+            for (let k=0; k< grey_scale_dimensions[2]; k++ ){
+              var dd = d[i][j][k];
+              if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+
+              if(k == 0){
+              pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
+              }
+              if(k == 1){
+              pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
+              }
+              if(k == 2){
+              pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
+              }
+            }
+        }//undefined
+        else {
+          var dd = d[i][j];
+          if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+          pixel_array += '<span class="rgb_red_class" style="color:rgb(120, 121, 128); list-style-type:none;">'+ dd  +',</span>'
+        }//else
+            pixel_array += '</span>'
+
+        }//j
+        pixel_array += '</li>'
+      }
+      pixel_array += '</ul>'
+      //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+      $('.image-channels').html(pixel_array)
+      $(".rgb_class").css("font-size", '1.0em');
+      return false;
+    }
+
 
     //................... Display Data array ..........................
     //$('.image-channels').empty()
@@ -1201,10 +1399,65 @@ $(".upload-image-container").on('click', '#zoom-out', function(evt){
        //else { $(".lines").remove() ; global_grid = true}
 })
 
+//----------------------------------------------------------------------------------------
+//                                            FUNCTIONS - UTILS
+//-----------------------------------------------------------------------------------------
+function draw_pixel(x_top_left, y_top_left){
+
+      global_clicked_pixel = global_svg_grid.append("rect")
+      .attr("x", x_top_left)
+      .attr("y", y_top_left)
+      .attr("width", global_tile_width)
+      .attr("height", global_tile_width)
+      .attr("fill", "rgba(128, 128, 128, 0.4)")
+}
+
+function draw_kernel(x_top_left, y_top_left, kernel_data){
+
+  var data_obj = [
+    {x:x_top_left, y: y_top_left, t:kernel_data[0]}, {x:x_top_left + global_tile_width, y: y_top_left, t:kernel_data[1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left, t:kernel_data[2]},
+
+    {x:x_top_left, y: y_top_left + global_tile_width, t:kernel_data[3]}, {x:x_top_left + global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[4]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[5]},
+
+    {x:x_top_left, y: y_top_left + 2*global_tile_width, t:kernel_data[6]}, {x:x_top_left + global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[7]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[8]}
+  ]
+
+  var num_row = parseInt(global_image_file_height/global_tile_width)
+  var num_col = parseInt(global_image_file_width/global_tile_width)
+
+  global_kernel_shape = d3.select('.upload-image-container')
+          .append("svg")
+          .attr("width", global_tile_width * num_col)
+          .attr("height", global_tile_width * num_row)
+          .selectAll("g")
+          .data(data_obj)
+          .enter()
+          .append("g")
+          .attr("class", "kernel")
+
+  var rects = global_kernel_shape.append("rect")
+  .attr("x", function(d,i){ return d.x;})
+  .attr("y", function(d,i){return d.y;})
+  .attr("width", global_tile_width)
+  .attr("height", global_tile_width)
+  .attr("fill", "rgba(128, 128, 128, 0.4)")
+  .attr("class", "kernel_rects")
+  .style("stroke", "rgb(6,120,155)")
+  .style("stroke-width", 4)
+
+  var texts = global_kernel_shape.append('text')
+   .attr('x', function(d, i) { return d.x + 0.45*global_tile_width; })
+   .attr('y', function(d, i) { return d.y + 0.55*global_tile_width; })
+   .attr('fill', function(d) { return "black"; })
+   .attr("class", "kernel_texts")
+   .text(function(d) { return d.t; })
+
+}
+
 
 //------------------------------------------------------------------------------------------//
 //                                            END END
-//---------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------
 //LIBRAY  3D
 
 

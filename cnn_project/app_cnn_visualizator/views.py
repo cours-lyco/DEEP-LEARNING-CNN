@@ -78,7 +78,7 @@ def simple_upload(request):
                     destination.write(chunk)
 
         #print("------------ paths_list -------------: ", paths_list) #['images/uploaded_file0']
-        
+
         try: ##### BUILDING CHANNELS
             uploaded_image_url = paths_list[0]
             uploaded_file_extension = os.path.splitext(uploaded_image_url)[1]
@@ -90,6 +90,7 @@ def simple_upload(request):
             #print(".......", uploaded_image_url)
             normalize_url = uploaded_image_url
             #print("------------>>>>>>>", normalize_url)
+            global im_instance
             im_instance = PreprocessImage( "media/" + normalize_url )
 
             #print("...... img_numpy_shape: .... :", im_instance.img_numpy_shape)
@@ -109,12 +110,19 @@ def simple_upload(request):
             blue_channel_path = "media/images/blue_channel."+uploaded_file_extension
             im.save(blue_channel_path)
 
+            greyscale_image = im_instance.img_as_grey_numpy
+            im = Image.fromarray(greyscale_image)
+            greyscale_image_path = "media/images/greyscale_channel."+uploaded_file_extension
+            im.save(greyscale_image_path)
+
             return  HttpResponse(json.dumps([
                 red_channel_path,
                 green_channel_path,
                 blue_channel_path,
                 json.dumps(paths_list) , #todo: loop over liste
-                json.dumps( im_instance.img_numpy.tolist() )
+                json.dumps( im_instance.img_numpy.tolist() ),
+                greyscale_image_path,
+                json.dumps(im_instance.img_as_grey_numpy.tolist())
              ]))
         except Exception as ex:
             print("[ERROR from build_channel]" , ex)
@@ -126,45 +134,59 @@ def simple_upload(request):
 
 
 ################################################################################
-#
+#                     CONVOLUTION
 ################################################################################
-def  build_channels(request):
-    if request.method == 'POST':
+def convolution_kernel(request):
+
         try:
-            uploaded_image_url = request.POST['mydata']
-            uploaded_file_extension = os.path.splitext(uploaded_image_url)[1]
+            if request.method != 'POST':
+                return  HttpResponse("")
+            else:
+                filter = []
+                for i,j in request.POST.items():
+                    filter.append(request.POST.getlist(i))
+                filter = [[float(el) for el in filter[i]] for i in range(len(filter)) ]
+            print("----------------------FILTER:----------  ", type(filter[0][0]))
 
-            if not uploaded_file_extension or len(uploaded_file_extension) < 3:
-                uploaded_file_extension = 'png'
+            weight  = 1
+            image_array = im_instance.img_as_grey_numpy
+            i = image_array
 
-            #print("extension: ", uploaded_file_extension)
-            #print(".......", uploaded_image_url)
-            normalize_url = "".join(uploaded_image_url[1:])
-            #print("------------>>>>>>>", normalize_url)
-            im_instance = PreprocessImage( normalize_url )
+            print("img len: ",im_instance.img_as_grey_numpy.shape )
+            stride = 1
+            i_transformed = np.zeros(( 1+(i.shape[0] - len(filter))//stride, 1+(i.shape[1] - len(filter))//stride ), dtype=np.float64)
+            print("i_transformed: ", i_transformed.shape)
+            for x in range(1, i.shape[0] - 1):
+                for y in range(1, i.shape[1] - 1):
+                    output_pixel = 0.0
+                    output_pixel = output_pixel + (i[x - 1, y-1] * filter[0][0])
+                    output_pixel = output_pixel + (i[x, y-1] * filter[0][1])
+                    output_pixel = output_pixel + (i[x + 1, y-1] * filter[0][2])
 
-            red_channel = im_instance.img_nump_red_channel
-            # convert numpy array to PIL Image
-            im = Image.fromarray(red_channel)
-            red_channel_path = "media/images/red_channel."+uploaded_file_extension
-            im.save(red_channel_path)
+                    output_pixel = output_pixel + (i[x-1, y] * filter[1][0])
+                    output_pixel = output_pixel + (i[x, y] * filter[1][1])
+                    output_pixel = output_pixel + (i[x+1, y] * filter[1][2])
 
-            green_channel = im_instance.img_nump_green_channel
-            im = Image.fromarray(green_channel)
-            green_channel_path = "media/images/green_channel."+uploaded_file_extension
-            im.save(green_channel_path)
-
-            blue_channel = im_instance.img_nump_blue_channel
-            im = Image.fromarray(blue_channel)
-            blue_channel_path = "media/images/blue_channel."+uploaded_file_extension
-            im.save(blue_channel_path)
+                    output_pixel = output_pixel + (i[x-1, y+1] * filter[2][0])
+                    output_pixel = output_pixel + (i[x, y+1] * filter[2][1])
+                    if x < i.shape[0] -1  and y < i.shape[1] - 1:
+                        output_pixel = output_pixel + (i[x+1, y+1] * filter[2][2])
+                    output_pixel = output_pixel * weight
+                    if(output_pixel<0):
+                        output_pixel=0
+                    if(output_pixel>255):
+                        output_pixel=255
+                    if x < i_transformed.shape[0] - 1 and y < i_transformed.shape[1] - 1:
+                        i_transformed[x, y] = output_pixel
+            im = Image.fromarray(i_transformed.astype(np.uint8))
+            #f_ext = (im_instance.img.format).lower()
+            kernel_conv_img_path = "media/images/kernel_image"
+            im.save(kernel_conv_img_path, "png")
 
             return  HttpResponse(json.dumps([
-                red_channel_path,
-                green_channel_path,
-                blue_channel_path,
-                json.dumps( im_instance.img_numpy.tolist() )
+                kernel_conv_img_path,
+                json.dumps( i_transformed.tolist() )
              ]))
         except Exception as ex:
-            print("[ERROR from build_channel]" , ex)
+            print("[ERROR from convolution_kernel]" , ex)
             return  HttpResponse("");

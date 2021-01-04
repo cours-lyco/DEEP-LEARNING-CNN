@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 class PreprocessImage(object):
     def __init__(self, imageFile):
         self.img =  Image.open(imageFile)
-        self.img_as_grey = np.asarray(Image.open(imageFile).convert('L'))
+        self.img_as_grey = Image.open(imageFile).convert('L')
+        self.img_as_grey_numpy = np.asarray(self.img_as_grey)
 
         self.format = (self.img).format #format PNG
         self.size =  (self.img).size # size (302, 300)

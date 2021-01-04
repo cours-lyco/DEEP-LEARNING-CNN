@@ -11,7 +11,7 @@
 .navbar-container ul li , .navbar-container ul li a , .navbar-container ul li select{
     list-style-type: none;
     display: inline-block;
-    width:150px;
+    width:115px;
     border:1px solid #808080;
     margin-right:10px;
     border-radius:2px;
@@ -83,7 +83,7 @@
   "border:1px solid orange;
   position : absolute;
   top:50px;left:23px;"
-  width:50%;
+  width:35%;
   margin: 0 auto;
 }
 
