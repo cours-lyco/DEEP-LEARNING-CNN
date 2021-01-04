@@ -61,6 +61,61 @@ window.global_image_ytop_left = null;
 window.global_kernel_array = null;
 window.global_kernel_file = null;
 
+
+//KERNEL
+var kernel_array = [
+    [-1,  7,  5],
+     [0, -2, -3],
+     [8,  7, -4]
+ ]
+
+ var kernel_identity = [
+     [0,   0,  0],
+     [0,   1,  0],
+     [0,   0,  0]
+  ]
+
+  var kernel_edge_detection0 = [
+    [-1, -2, -1],
+    [0,  0,  0],
+    [1,  2,  1]
+  ]
+
+  var kernel_edge_detection1 = [
+      [1,   0,  -1],
+      [0,   1,   0],
+      [-1,  0,   1]
+   ]
+
+   var kernel_edge_detection2 = [
+       [0,   1,   0],
+       [1,   -4,   1],
+       [0,    1,   0]
+    ]
+
+    var kernel_edge_detection3 = [
+        [-1,   -1,   -1],
+        [-1,   8,   -1],
+        [-1,   -1,   -1]
+     ]
+
+    var kernel_sharpen = [
+        [0,   -1,   0],
+        [-1,   5,   -1],
+        [0,    -1,   0]
+     ]
+
+  var kernel_box_blur = [
+              [1/9, 1/9, 1/9],
+              [1/9, 1/9, 1/9],
+              [1/9, 1/9, 1/9] ]
+
+ var kernel_gaussian_blur = [
+          [1/16, 2/16, 1/16],
+          [2/16, 4/16, 2/16],
+          [1/16, 1/16, 1/16] ]
+
+
 //CONSOLE INPUT
 var console_val = document.getElementById("console")
 
@@ -911,14 +966,10 @@ $("#build_kernel").click(function( e ){
 
     //$('.image-channels .pixel-array-displayed').css({"background-color": "yellow", "font-size": "30%"});
     // get x coord
-    var kernel_array = [
-        -1,  7,  5,
-         0, -1, -1,
-         8,  7, -1
-     ]
+
 
     if(global_kernel_shape_show){
-    draw_kernel(  global_image_xtop_left ,   global_image_ytop_left , kernel_array)
+    draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,kernel_array)
     global_kernel_shape_show = false
   } else {
       global_kernel_shape.remove()
@@ -935,11 +986,6 @@ $("#build_kernel").click(function( e ){
 $("#convolution").click (function(evt){
     evt.preventDefault()
     console.log("convolution")
-    var kernel_array = [
-        -1,  7,  5,
-         0, -2, -3,
-         8,  7, -4
-     ]
 
     var num_row = parseInt(global_image_file_height/global_tile_width)
     var num_col = parseInt(global_image_file_width/global_tile_width)
@@ -953,7 +999,7 @@ $("#convolution").click (function(evt){
     var row = 0;
     var col = 0;
 
-    function processData(kernel_array, callback){
+    function processData(another_kernel, callback){
 
     var inte = setInterval(() => {
         x_top_left = xx_top_left + col * global_tile_width
@@ -981,12 +1027,12 @@ $("#convolution").click (function(evt){
 
     $.ajax({
       url: "/cnn-convolution-kernel",
-      data: { "kernel_array": [[-1, -2, -1],    [0, 0, 0],     [1, 2, 1]  ] },
+      data: { "kernel_array": kernel_edge_detection3 },
       type: 'post',
        cache:  false,
       success: function (data) {
           data = JSON.parse(data)
-          
+
           global_kernel_file = data[0]
           global_kernel_array = data[1]
       },
@@ -1415,11 +1461,11 @@ function draw_pixel(x_top_left, y_top_left){
 function draw_kernel(x_top_left, y_top_left, kernel_data){
 
   var data_obj = [
-    {x:x_top_left, y: y_top_left, t:kernel_data[0]}, {x:x_top_left + global_tile_width, y: y_top_left, t:kernel_data[1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left, t:kernel_data[2]},
+    [{x:x_top_left, y: y_top_left, t:kernel_data[0][0]}, {x:x_top_left + global_tile_width, y: y_top_left, t:kernel_data[0][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left, t:kernel_data[0][2]}],
 
-    {x:x_top_left, y: y_top_left + global_tile_width, t:kernel_data[3]}, {x:x_top_left + global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[4]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[5]},
+    [{x:x_top_left, y: y_top_left + global_tile_width, t:kernel_data[1][0]}, {x:x_top_left + global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[1][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[1][2]}],
 
-    {x:x_top_left, y: y_top_left + 2*global_tile_width, t:kernel_data[6]}, {x:x_top_left + global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[7]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[8]}
+    [{x:x_top_left, y: y_top_left + 2*global_tile_width, t:kernel_data[2][0]}, {x:x_top_left + global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[2][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[2][2]}]
   ]
 
   var num_row = parseInt(global_image_file_height/global_tile_width)
@@ -1435,9 +1481,12 @@ function draw_kernel(x_top_left, y_top_left, kernel_data){
           .append("g")
           .attr("class", "kernel")
 
-  var rects = global_kernel_shape.append("rect")
-  .attr("x", function(d,i){ return d.x;})
-  .attr("y", function(d,i){return d.y;})
+  var rects = global_kernel_shape.selectAll('rect')
+  .data( function(d,i,j) { return d; } ) //lines
+  .enter()
+  .append("rect")
+  .attr("x", function(d,i, j){ return d.x;})
+  .attr("y", function(d,i, j){return d.y;})
   .attr("width", global_tile_width)
   .attr("height", global_tile_width)
   .attr("fill", "rgba(128, 128, 128, 0.4)")
@@ -1445,15 +1494,45 @@ function draw_kernel(x_top_left, y_top_left, kernel_data){
   .style("stroke", "rgb(6,120,155)")
   .style("stroke-width", 4)
 
-  var texts = global_kernel_shape.append('text')
-   .attr('x', function(d, i) { return d.x + 0.45*global_tile_width; })
-   .attr('y', function(d, i) { return d.y + 0.55*global_tile_width; })
-   .attr('fill', function(d) { return "black"; })
+  var texts = global_kernel_shape.selectAll('text')
+   .data( function(d,i,j) { return d; } )
+   .enter()
+   .append("text")
+   .attr('x', function(d, i, j) { return d.x + 0.45*global_tile_width; })
+   .attr('y', function(d, i, j) { return d.y + 0.55*global_tile_width; })
+   .attr('fill', function(d, i, j ) { return "black"; })
    .attr("class", "kernel_texts")
-   .text(function(d) { return d.t; })
+   .text(function(d,i,j) {
+      if (d.t % 1 === 0){ return d.t}
+      return (d.t).toFixed(2);
+  })
 
 }
 
+//---------------------------------------------------------------------------------------//
+//
+//                                    MAX POOLING
+//---------------------------------------------------------------------------------------/
+$("#max-pooling").click(function(e){
+      e.preventDefault()
+      console.log("max pooling")
+
+      $.ajax({
+        url: "/max-poll-cnn-files",
+        data: {'kernel_file': global_kernel_file},
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        success: function (data) {
+          var rdata = JSON.parse(data)
+          //console.log(data)
+            $(".upload-image-container img").empty()
+            $(".upload-image-container img").attr('src', '/'+rdata[0])
+        },
+        error: function(err){console.log(err)}
+      })
+})
 
 //------------------------------------------------------------------------------------------//
 //                                            END END

@@ -154,6 +154,7 @@ def convolution_kernel(request):
 
             print("img len: ",im_instance.img_as_grey_numpy.shape )
             stride = 1
+            global i_transformed
             i_transformed = np.zeros(( 1+(i.shape[0] - len(filter))//stride, 1+(i.shape[1] - len(filter))//stride ), dtype=np.float64)
             print("i_transformed: ", i_transformed.shape)
             for x in range(1, i.shape[0] - 1):
@@ -190,3 +191,36 @@ def convolution_kernel(request):
         except Exception as ex:
             print("[ERROR from convolution_kernel]" , ex)
             return  HttpResponse("");
+
+
+######################################################################################
+#      MAX POOLING
+######################################################################################
+def  max_pool_image(request):
+    try:
+        size_x, size_y = i_transformed.shape[0], i_transformed.shape[1]
+        new_x = int(size_x/2)
+        new_y = int(size_y/2)
+        newImage = np.zeros((new_x, new_y))
+        for x in range(0, size_x, 2):
+            for y in range(0, size_y, 2):
+                pixels = []
+                pixels.append(i_transformed[x, y])
+                pixels.append(i_transformed[x+1, y])
+                pixels.append(i_transformed[x, y+1])
+                pixels.append(i_transformed[x+1, y+1])
+                pixels.sort(reverse=True)
+                newImage[int(x/2),int(y/2)] = pixels[0]
+
+        im = Image.fromarray(newImage.astype(np.uint8))
+        poll_max_img_path = "media/images/pool_max_image"
+        im.save(poll_max_img_path, "png")
+
+        return  HttpResponse(json.dumps([
+            poll_max_img_path,
+            json.dumps( newImage.tolist() )
+         ]))
+
+    except Exception as ex:
+        print(ex)
+        return HttpResponse("")
