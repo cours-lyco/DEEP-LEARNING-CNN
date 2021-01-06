@@ -61,6 +61,7 @@ window.global_image_ytop_left = null;
 window.global_kernel_array = null;
 window.global_kernel_file = null;
 
+window.global_user_input_kernel = null;
 
 //KERNEL
 var kernel_array = [
@@ -315,11 +316,11 @@ d3.selectAll("a")
           // Get x & y co-ordinates
           //console.log(d3.mouse(this));
           d3.select(this.parentNode)
-            .style("border", "1px solid orange");
+            .style("border", "1px solid orange")
       })
       .on("mouseout", function(){
           d3.select(this)
-              .style("color", "#808080");
+              .style("color", "rgb(253,254,255)")
 
           d3.select(this.parentNode)
             .style("border", "1px solid #808080");
@@ -391,7 +392,7 @@ $("#upload_file").change(function () {
             var elt = $(".upload-image-container")
             $(".upload-image-container").css('border', '1px solid black;')
 
-            $(".upload-image-container").append( $('<div style= width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%; text-align:center;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + files_path[0] +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+            $(".upload-image-container").append( $('<div style= width:79%; text-align:center;"><p style="position:absolute; text-align:center; z-index:10;top:-15%;left:-4%; text-align:center;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + files_path[0] +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
             localStorage.setItem('original_image', files_path[0]);
             //localStorage.removeItem('original_image');
@@ -402,7 +403,7 @@ $("#upload_file").change(function () {
             const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
 
 
-            $('.image-channels').css('font-size', '0.9em');
+            $('.image-channels').css('font-size', '1.4em');
             $('.image-channels').css('left', '15')
             $('.image-channels').css('width', '97%')
             $('.image-channels').css('z-index', '-1')
@@ -565,9 +566,6 @@ $('#cnn-image-grid').click(function(e){
                     draw_pixel(norm_xclicked ,norm_yclicked);
 
                     $("#rgb_" + norm_yclicked + '_' + norm_xclicked).css('font-size', '4.2em')
-
-
-
                 })
                 .style('position', 'absolute')
 
@@ -614,7 +612,7 @@ $(document).on('click', "#display_red_channel", function (e) {
 
       //channels_images = JSON.parse(channels_images)
       $(".upload-image-container").empty()
-      $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_red_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+      $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-15%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_red_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
       //....................................
       $(".upload-image-container img").css('width', global_image_file_width )
@@ -698,7 +696,7 @@ $(".upload-image-container").on('click', '#display_green_channel' ,function(e){
           //global_grid = !global_grid
 
           $(".upload-image-container").empty()
-          $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_green_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+          $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-15%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_green_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
           //....................................
           $(".upload-image-container img").css('width', global_image_file_width )
@@ -786,7 +784,7 @@ $(".upload-image-container").on('click', '#display_blue_channel' ,function(e){
         //global_grid = !global_grid
 
       $(".upload-image-container").empty()
-      $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_blue_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+      $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-15%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/' + global_image_blue_channel_path +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
       //....................................
       $(".upload-image-container img").css('width', global_image_file_width )
@@ -872,7 +870,7 @@ $(".upload-image-container").on('click', '#display_original_image' ,function(e){
 
     $(".upload-image-container").empty()
     $(".upload-image-container").empty()
-    $(".upload-image-container").append( $('<div  width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + original_image +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+    $(".upload-image-container").append( $('<div  width:79%;"><p style="position:absolute; z-index:10;top:-15%;left:-4%;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + original_image +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
 
     $(".rgb_red_class").show()
@@ -966,15 +964,10 @@ $("#build_kernel").click(function( e ){
 
     //$('.image-channels .pixel-array-displayed').css({"background-color": "yellow", "font-size": "30%"});
     // get x coord
+    if(  $("#myForm").css("display") == 'block'  ){
+         $("#myForm").css("display", "none")
+    } else {  $("#myForm").css("display", "block")  }
 
-
-    if(global_kernel_shape_show){
-    draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,kernel_array)
-    global_kernel_shape_show = false
-  } else {
-      global_kernel_shape.remove()
-      global_kernel_shape_show = true;
-  }
     return false;
 
 
@@ -1011,25 +1004,38 @@ $("#convolution").click (function(evt){
         col += 1;
 
         if(col > num_col - 3){ row = row + 1; col = 0; x_top_left = xx_top_left; y_top_left=yy_top_left + row*global_tile_width }
-        if(row > num_row-3){ clearInterval(inte); }
+        if(row > num_row-3){
 
-        if(typeof callback == "function"){
-          callback()
+          if(typeof callback == "function"){
+            callback()
+          }
+          clearInterval(inte);
+
         }
 
-    }, 130)}
+
+
+    }, 150)}
 
     processData(kernel_array, () => {
-          $(".upload-image-container img").attr('src', '/'+global_kernel_file)
+        $(".convolution_image_container img").remove()
+
+        var conv_margin_top = parseInt( 1.7*global_image_file_height + 20)
+        $(".convolution_image_container").css({
+          'position' : 'absolute' ,
+          'top': conv_margin_top,
+          'left': '6%'
+        })
+
+        $(".convolution_image_container").append( $('<div  width:79%;"><p style="position:absolute; z-index:15;top:-25%;left:-4%;"><img id="image-upload" static src= "/' + global_kernel_file +'" style="display:inline-block; border:1px solid blue; position:absolute; top:' + conv_margin_top  + 'left:' + global_image_xtop_left +'" alt="image-ici"></div>'))
     })
 
 
 
     $.ajax({
       url: "/cnn-convolution-kernel",
-      data: { "kernel_array": kernel_edge_detection3 },
+      data: { "kernel_array": global_user_input_kernel },
       type: 'post',
-       cache:  false,
       success: function (data) {
           data = JSON.parse(data)
 
@@ -1067,7 +1073,7 @@ $(".upload-image-container").on('click', '#reduce_uploaded_image', function(evt)
         original_image =  localStorage.getItem('original_image');
         $(".upload-image-container").empty()
         $(".upload-image-container").empty()
-        $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-5%;left:-4%;"><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + original_image +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
+        $(".upload-image-container").append( $('<div style=" width:79%;"><p style="position:absolute; z-index:10;top:-15%;left:-4%;"><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + original_image +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
 
           global_reduce_uploaded_image = false
       }
@@ -1092,7 +1098,7 @@ $(".upload-image-container").on('click', '#zoom-in', function(evt){
     const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
 
 
-    $('.image-channels').css('font-size', '0.9em');
+    $('.image-channels').css('font-size', '1.4em');
     $('.image-channels').css('left', '15')
     $('.image-channels').css('width', '97%')
     $('.image-channels').css('z-index', '-1')
@@ -1333,7 +1339,7 @@ $(".upload-image-container").on('click', '#zoom-out', function(evt){
     const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
 
 
-    $('.image-channels').css('font-size', '0.9em');
+    $('.image-channels').css('font-size', '1.4em');
     $('.image-channels').css('left', '15')
     $('.image-channels').css('width', '97%')
     $('.image-channels').css('z-index', '-1')
@@ -1445,6 +1451,147 @@ $(".upload-image-container").on('click', '#zoom-out', function(evt){
        //else { $(".lines").remove() ; global_grid = true}
 })
 
+
+//---------------------------------------------------------------------------------------//
+//
+//                                    MAX POOLING
+//---------------------------------------------------------------------------------------/
+$("#max-pooling").click(function(e){
+      e.preventDefault()
+      console.log("max pooling")
+
+      $.ajax({
+        url: "/max-poll-cnn-files",
+        data: {'kernel_file': global_kernel_file},
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        success: function (data) {
+          var rdata = JSON.parse(data)
+          //console.log(data)
+            $(".upload-image-container img").empty()
+            $(".upload-image-container img").attr('src', '/'+rdata[0])
+        },
+        error: function(err){console.log(err)}
+      })
+})
+
+
+//---------------------------------------------------------------------------------------//
+//
+//                                    FULLY CONNECTED
+//---------------------------------------------------------------------------------------/
+$("#fully-conn").click(function(e){
+      e.preventDefault()
+      console.log("fully connected")
+
+      $.ajax({
+        url: "/fully-conn-cnn",
+        data: {'kernel_file': "ok"},
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        success: function (data) {
+          var rdata = JSON.parse(data)
+          //console.log(data)
+            $(".upload-image-container img").empty()
+            $(".upload-image-container img").attr('src', '/'+rdata[0])
+        },
+        error: function(err){console.log(err)}
+      })
+})
+
+
+//---------------------------------------------------------------------------------------//
+//
+//                                    TRAINING MODEL
+//---------------------------------------------------------------------------------------/
+$("#training-cnn").click(function(e){
+      e.preventDefault()
+      console.log("ftrainning-model")
+
+      $.ajax({
+        url: "/trainning-cnn",
+        data: {'kernel_file': "ok"},
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        success: function (data) {
+          var rdata = JSON.parse(data)
+          //console.log(data)
+            $(".upload-image-container img").empty()
+            $(".upload-image-container img").attr('src', '/'+rdata[0])
+        },
+        error: function(err){console.log(err)}
+      })
+})
+
+
+//---------------------------------------------------------------------------------------//
+//
+//                                    PREDICTION
+//---------------------------------------------------------------------------------------/
+$("#predict-cnn").click(function(e){
+      e.preventDefault()
+      console.log("ftrainning-model")
+
+      $.ajax({
+        url: "/trainning-cnn",
+        data: {'kernel_file': "ok"},
+        cache: false,
+        contentType: false,
+        processData: false,
+        type: 'post',
+        success: function (data) {
+          var rdata = JSON.parse(data)
+          //console.log(data)
+            $(".upload-image-container img").empty()
+            $(".upload-image-container img").attr('src', '/'+rdata[0])
+        },
+        error: function(err){console.log(err)}
+      })
+})
+
+//---------------------------------------------------------------------------------------
+//                          POPUP KERNEL
+//---------------------------------------------------------------------------------------
+$("form").on('click', function(e){
+      e.preventDefault()
+      if(e.target.name == 'submit-filter')
+      {
+            var inputVal = $("input[type='text']").val()
+            var a = inputVal.split(",").map(Number);
+
+            global_user_input_kernel = [
+              [a[0], a[1], a[2]],
+              [a[3], a[4], a[5]],
+              [a[6], a[7], a[8]]
+            ]
+
+            if(global_kernel_shape_show){
+                draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,kernel_array)
+                global_kernel_shape_show = false
+             } else {
+               draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,global_user_input_kernel)
+                  global_kernel_shape.remove()
+                  global_kernel_shape_show = true;
+              }
+
+      }
+      if(  e.target.name == 'reset-filter') {
+         $(this).remove()
+         //$(this).hide()
+      }
+})
+
+$(".form-container input[name='reset-filter']").on('click', function(e){
+      e.preventDefault()
+      alert("second child")
+})
+
 //----------------------------------------------------------------------------------------
 //                                            FUNCTIONS - UTILS
 //-----------------------------------------------------------------------------------------
@@ -1508,31 +1655,6 @@ function draw_kernel(x_top_left, y_top_left, kernel_data){
   })
 
 }
-
-//---------------------------------------------------------------------------------------//
-//
-//                                    MAX POOLING
-//---------------------------------------------------------------------------------------/
-$("#max-pooling").click(function(e){
-      e.preventDefault()
-      console.log("max pooling")
-
-      $.ajax({
-        url: "/max-poll-cnn-files",
-        data: {'kernel_file': global_kernel_file},
-        cache: false,
-        contentType: false,
-        processData: false,
-        type: 'post',
-        success: function (data) {
-          var rdata = JSON.parse(data)
-          //console.log(data)
-            $(".upload-image-container img").empty()
-            $(".upload-image-container img").attr('src', '/'+rdata[0])
-        },
-        error: function(err){console.log(err)}
-      })
-})
 
 //------------------------------------------------------------------------------------------//
 //                                            END END

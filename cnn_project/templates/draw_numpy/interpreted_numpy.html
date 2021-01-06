@@ -15,10 +15,13 @@
       <ul>
         <li><a href="#" id="cnn-load-Image">Upload-Image</a> </li>
         <li><a href="#" id="cnn-grey-scale">GreyScale</a> </li>
-        <li><a href="#" id="cnn-image-grid" >pixel</a> </li>
-        <li><a href="#" id="build_kernel">build-kernel</a> </li>
-        <li><a href="#" id="convolution">convolution</a> </li>
-          <li><a href="#"id="max-pooling" >Max Pooling</a> </li>
+        <li><a href="#" id="cnn-image-grid" >Pixel</a> </li>
+        <li><a href="#" id="build_kernel">Build-kernel</a> </li>
+        <li><a href="#" id="convolution">Convolution</a> </li>
+        <li><a href="#"id="max-pooling" >Max Pooling</a> </li>
+        <li><a href="#"id="fully-conn" >Full Conn</a> </li>
+        <li><a href="#"id="train-conn" >Training NN</a> </li>
+        <li><a href="#"id="predict-conn" >Prediction</a> </li>
         <li>
           <select name="pets" id="nympy-functions">
             <option value="">-- Please numpy funtion --</option>
@@ -27,32 +30,49 @@
             {% endfor %}
           </select>
          </li>
-        <li id="button-zoom" style="position:absolute; width:5%; right:12px;">
+        <li id="button-zoom" style="position:absolute; width:5%; right:12;">
 
         </li>
       </ul>
+      <p class="reload-page"><button onClick="window.location.reload()"><span class=reload>&#x21bb;</span></button></p>
     </nav>
-    <!--  ................................UPLOAD FILE ............................................ -->
+    <!--  ................................UPLOAD .......................................... -->
     <div class="popup-upload-file-container" style="display:none; margin:2px; padding:0;">
       <h1>   Dynamic Upload Example </h1>
       <input type="file" id="upload_file"  data-csrf-token="{{ csrf_token }}" multiple>
     </div><!-- end class="popup -->"
     <!--  ........................................................................................ -->
     <div class="upload-image-container">
-        <!--  <img id="image" src="{%  static 'images/agent_reinforcement.png' %}" alt=""> -->
-      <!--   <img id="image" static src= '/media/images/uploaded_file0.png'  alt="image-ici"> -->
-
-
+    </div>
+    <div class="upload-image-image-container">
     </div>
     <!--  ........................................................................................ -->
     <div class="board-container">
             <div id="board"> </div>
     </div>
+    <!-- ..............................................................................  -->
+    <!-- ........................... MODAL PU UP ......................................  -->
+    <div class="form-popup" id="myForm">
+  <form  class="form-container">
+    <h1>Filter</h1>
+
+    <label for="kernelv"><b>Kernel</b></label>
+    <input type="text" placeholder="filter-values" name="filter" required>
 
 
+    <button type="submit" class="btn" name="submit-filter">Submit</button>
+    <button type="submit" class="btn cancel" name="reset-filter" >Close</button>
+  </form>
+</div>
+
+    <!-- .............................................................................  -->
+    <!-- ...................... conv image result    .................................  -->
+    <div class="convolution_image_container">  </div>
 
 
-        <div style="display:none;" class="console-container">
+    <!-- .............................................................................  -->
+    <!-- ...................... console container   .................................  -->
+      <div style="display:none;" class="console-container">
           <textarea id="console" name="name" rows="8" cols="80"></textarea>
        </div>
        <!-- <svg width="960" height="500"></svg> -->

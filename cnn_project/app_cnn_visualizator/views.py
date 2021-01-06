@@ -146,7 +146,7 @@ def convolution_kernel(request):
                 for i,j in request.POST.items():
                     filter.append(request.POST.getlist(i))
                 filter = [[float(el) for el in filter[i]] for i in range(len(filter)) ]
-            print("----------------------FILTER:----------  ", type(filter[0][0]))
+            print("----------------------FILTER SERVER :----------  ", filter)
 
             weight  = 1
             image_array = im_instance.img_as_grey_numpy
@@ -181,7 +181,10 @@ def convolution_kernel(request):
                         i_transformed[x, y] = output_pixel
             im = Image.fromarray(i_transformed.astype(np.uint8))
             #f_ext = (im_instance.img.format).lower()
+
             kernel_conv_img_path = "media/images/kernel_image"
+            if os.path.isfile(kernel_conv_img_path):
+                os.remove(kernel_conv_img_path)
             im.save(kernel_conv_img_path, "png")
 
             return  HttpResponse(json.dumps([
@@ -197,6 +200,108 @@ def convolution_kernel(request):
 #      MAX POOLING
 ######################################################################################
 def  max_pool_image(request):
+    try:
+        size_x, size_y = i_transformed.shape[0], i_transformed.shape[1]
+        new_x = int(size_x/2)
+        new_y = int(size_y/2)
+        newImage = np.zeros((new_x, new_y))
+        for x in range(0, size_x, 2):
+            for y in range(0, size_y, 2):
+                pixels = []
+                pixels.append(i_transformed[x, y])
+                pixels.append(i_transformed[x+1, y])
+                pixels.append(i_transformed[x, y+1])
+                pixels.append(i_transformed[x+1, y+1])
+                pixels.sort(reverse=True)
+                newImage[int(x/2),int(y/2)] = pixels[0]
+
+        im = Image.fromarray(newImage.astype(np.uint8))
+        poll_max_img_path = "media/images/pool_max_image"
+        im.save(poll_max_img_path, "png")
+
+        return  HttpResponse(json.dumps([
+            poll_max_img_path,
+            json.dumps( newImage.tolist() )
+         ]))
+
+    except Exception as ex:
+        print(ex)
+        return HttpResponse("")
+
+
+
+######################################################################################
+#     FULLY CONNECTED
+######################################################################################
+
+def  fully_connected(request):
+    try:
+        size_x, size_y = i_transformed.shape[0], i_transformed.shape[1]
+        new_x = int(size_x/2)
+        new_y = int(size_y/2)
+        newImage = np.zeros((new_x, new_y))
+        for x in range(0, size_x, 2):
+            for y in range(0, size_y, 2):
+                pixels = []
+                pixels.append(i_transformed[x, y])
+                pixels.append(i_transformed[x+1, y])
+                pixels.append(i_transformed[x, y+1])
+                pixels.append(i_transformed[x+1, y+1])
+                pixels.sort(reverse=True)
+                newImage[int(x/2),int(y/2)] = pixels[0]
+
+        im = Image.fromarray(newImage.astype(np.uint8))
+        poll_max_img_path = "media/images/pool_max_image"
+        im.save(poll_max_img_path, "png")
+
+        return  HttpResponse(json.dumps([
+            poll_max_img_path,
+            json.dumps( newImage.tolist() )
+         ]))
+
+    except Exception as ex:
+        print(ex)
+        return HttpResponse("")
+
+######################################################################################
+#    TRAIN CNN
+######################################################################################
+
+def  train_cnn(request):
+    try:
+        size_x, size_y = i_transformed.shape[0], i_transformed.shape[1]
+        new_x = int(size_x/2)
+        new_y = int(size_y/2)
+        newImage = np.zeros((new_x, new_y))
+        for x in range(0, size_x, 2):
+            for y in range(0, size_y, 2):
+                pixels = []
+                pixels.append(i_transformed[x, y])
+                pixels.append(i_transformed[x+1, y])
+                pixels.append(i_transformed[x, y+1])
+                pixels.append(i_transformed[x+1, y+1])
+                pixels.sort(reverse=True)
+                newImage[int(x/2),int(y/2)] = pixels[0]
+
+        im = Image.fromarray(newImage.astype(np.uint8))
+        poll_max_img_path = "media/images/pool_max_image"
+        im.save(poll_max_img_path, "png")
+
+        return  HttpResponse(json.dumps([
+            poll_max_img_path,
+            json.dumps( newImage.tolist() )
+         ]))
+
+    except Exception as ex:
+        print(ex)
+        return HttpResponse("")
+
+
+######################################################################################
+#    PREDICT CNN
+######################################################################################
+
+def  predict_cnn(request):
     try:
         size_x, size_y = i_transformed.shape[0], i_transformed.shape[1]
         new_x = int(size_x/2)
