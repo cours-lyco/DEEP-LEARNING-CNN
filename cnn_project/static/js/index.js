@@ -26,42 +26,7 @@ $.ajaxSetup({
        headers: { "X-CSRFToken": getCookie("csrftoken") }
   });
 console.log("csrftoken: ", csrftoken);
-window.global_image_red_channel_path = null; //for channels images path
-window.global_image_green_channel_path = null; //for channels images path
-window.global_image_blue_channel_path = null; //for channels images path
 
-window.global_images_array = null; //for channels images path
-window.global_images_grey_scale_array_path = null
-window.global_images_grey_scale_array = null
-window.global_reduce_uploaded_image = false; //for channels images path
-
-window.global_grid = true //show grid or not
-window.global_image_file_width = null
-window.global_image_file_height = null
-
-window.global_image_file_width_copy = null;
-window.global_image_file_height_copy = null;
-window.is_grey_scale_image_active = false;
-window.global_svg_grid = null; //GRID SVG ELEMENT , draw grid, zom in, zoom out
-
-window.global_tile_width = 25
-window.global_tile_width_copy = 25
-
-window.global_zoom_in = 1.1
-window.global_zoom_out = 1.1
-
-window.global_clicked_pixel = null
-window.global_kernel_shape = null  //kernel square
-window.global_kernel_shape_show = true //show or hide kernel
-
-window.global_image_xtop_left = null;
-window.global_image_ytop_left = null;
-
-
-window.global_kernel_array = null;
-window.global_kernel_file = null;
-
-window.global_user_input_kernel = null;
 
 //KERNEL
 var kernel_array = [
@@ -310,161 +275,27 @@ console_val.addEventListener('keypress', function(e){
 d3.selectAll("a")
       .on("mouseover", function(){
           d3.select(this)
-            .style("color", "orange");
+            .style("font-family", "Georgia, serif");
             // Get current event info
             //console.log(d3.event);
           // Get x & y co-ordinates
           //console.log(d3.mouse(this));
           d3.select(this.parentNode)
-            .style("border", "1px solid orange")
+            .style("border-bottom", "1px solid orange")
       })
       .on("mouseout", function(){
           d3.select(this)
               .style("color", "rgb(253,254,255)")
 
           d3.select(this.parentNode)
-            .style("border", "1px solid #808080");
-      });
+            .style("border-bottom", "1px solid #BDC3C7");
+      })
 
 
 //-----------------------------------------------------------------------------------------//
 //                                    LOAD IMAGE
 //---------------------------------------------------------------------------------------
 
-$("#cnn-load-Image").click(function(e){  $(".popup-upload-file-container").toggle("slide");  })
-
-// Get the add new upload link.
-$("#upload_file").change(function () {
-  var _URL = window.URL || window.webkitURL;
-  var file, img;
-   if ((file = this.files[0])) {
-       img = new Image();
-       var objectUrl = _URL.createObjectURL(file);
-       img.onload = function () {
-           global_image_file_width = this.width ;
-           global_image_file_height =  this.height ;
-
-           global_image_file_width_copy = this.width ;
-           global_image_file_height_copy =  this.height ;
-
-           _URL.revokeObjectURL(objectUrl);
-       };
-       img.src = objectUrl;
-   }
-
-  var data = new FormData();
-  $.each($("#upload_file")[0].files, function(i, file) {
-    data.append("file", file);
-  });
-  data.append("csrfmiddlewaretoken", $(this).attr("data-csrf-token"));
-
-  $.ajax({
-    url: "/upload-cnn-files",
-    data: data,
-    cache: false,
-    contentType: false,
-    processData: false,
-    type: 'post',
-    beforeSend: function () {
-      // before send, display loading, etc...
-    },
-    success: function (data) {
-
-            var rdata = JSON.parse(data)
-
-            global_image_red_channel_path = rdata[0]
-            global_image_green_channel_path = rdata[1]
-            global_image_blue_channel_path = rdata[2]
-
-            files_path = JSON.parse(rdata[3])
-            global_images_array = JSON.parse( rdata[4] )
-
-            global_images_grey_scale_array_path = rdata[5]
-            global_images_grey_scale_array = JSON.parse( rdata[6])
-
-            global_tile_width = global_tile_width_copy
-            global_image_file_width = global_image_file_width_copy
-            global_image_file_height = global_image_file_height_copy
-
-            global_tile_width = global_tile_width_copy
-
-          if (files_path.length > 0){
-            var elt = $(".upload-image-container")
-            $(".upload-image-container").css('border', '1px solid black;')
-
-            $(".upload-image-container").append( $('<div style= width:79%; text-align:center;"><p style="position:absolute; text-align:center; z-index:10;top:-15%;left:-4%; text-align:center;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + files_path[0] +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
-
-            localStorage.setItem('original_image', files_path[0]);
-            //localStorage.removeItem('original_image');
-
-            $(".popup-upload-file-container").hide() //hide input file
-            //................... Display Pixel ..........................
-
-            const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
-
-
-            $('.image-channels').css('font-size', '1.4em');
-            $('.image-channels').css('left', '15')
-            $('.image-channels').css('width', '97%')
-            $('.image-channels').css('z-index', '-1')
-
-            $(".upload-image-container img").css('width', global_image_file_width )
-            $(".upload-image-container img").css('height', global_image_file_height )
-
-            //var imag_width = $('#image-upload').width() //0
-            //var imag_height = $('#image-upload').height() //0
-            console.log("dimensiosn: ", dimensions)
-
-            //var global_tile_width = 25;
-
-
-            var d = global_images_array;
-            var offset_x = parseInt(1.25*global_image_file_width)
-            var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
-            for (let i=0; i< dimensions[0]; i += global_tile_width){
-              pixel_array += '<li style="list-style-type:none;">'
-              for (let j = 0; j< dimensions[1]; j += global_tile_width){
-
-                  var pixel_id = "rgb_" + i + '_' + j
-                  pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
-                  colors = ['red', 'green', 'blue']
-                  for (let k=0; k< dimensions[2]; k++ ){
-                    var dd = d[i][j][k];
-                    if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
-
-                    if(k == 0){
-                    pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
-                    }
-                    if(k == 1){
-                    pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
-                    }
-                    if(k == 2){
-                    pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
-                    }
-                  }
-                  pixel_array += '</span>'
-
-              }//j
-              pixel_array += '</li>'
-            }
-            pixel_array += '</ul>'
-            //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
-            $('.image-channels').html(pixel_array)
-            $(".rgb_class").css("font-size", '1.0em');
-            //$('.image-channels').text(JSON.stringify(global_images_array[x_prime][y_prime]))
-
-
-            //.............................................................
-        }// if files_path.length > 0
-
-    },
-    error: function (err) {
-      console.error(err)
-      // error handling...
-    }
-  });
-
-});//end change
 
 //---------------------------------------------------------------------------------------//
 //                                    GREY SCALE
@@ -979,6 +810,7 @@ $("#build_kernel").click(function( e ){
 $("#convolution").click (function(evt){
     evt.preventDefault()
     console.log("convolution")
+    $(".convolution_image_container img").remove()
 
     var num_row = parseInt(global_image_file_height/global_tile_width)
     var num_col = parseInt(global_image_file_width/global_tile_width)
@@ -1015,10 +847,10 @@ $("#convolution").click (function(evt){
 
 
 
-    }, 150)}
+    }, 120)}
 
     processData(kernel_array, () => {
-        $(".convolution_image_container img").remove()
+
 
         var conv_margin_top = parseInt( 1.7*global_image_file_height + 20)
         $(".convolution_image_container").css({
@@ -1028,8 +860,53 @@ $("#convolution").click (function(evt){
         })
 
         $(".convolution_image_container").append( $('<div  width:79%;"><p style="position:absolute; z-index:15;top:-25%;left:-4%;"><img id="image-upload" static src= "/' + global_kernel_file +'" style="display:inline-block; border:1px solid blue; position:absolute; top:' + conv_margin_top  + 'left:' + global_image_xtop_left +'" alt="image-ici"></div>'))
-    })
 
+        //Draw array
+        const grey_scale_dimensions = [   global_kernel_array.length,   global_kernel_array[0].length,   global_kernel_array[0][0].length ]; //[276, 182, 2]
+
+
+      var d = global_kernel_array;
+      var offset_x = parseInt(1.25*global_image_file_width)
+      var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+      for (let i=0; i< grey_scale_dimensions[0]; i += global_tile_width){
+        pixel_array += '<li style="list-style-type:none;">'
+        for (let j = 0; j< grey_scale_dimensions[1]; j += global_tile_width){
+
+            var pixel_id = "rgb_" + i + '_' + j
+            pixel_array += '<span class="rgb_class-conv" id="' + pixel_id +'">'
+            colors = ['red', 'green', 'blue']
+          if(typeof grey_scale_dimensions[2] !== 'undefined'){
+            for (let k=0; k< grey_scale_dimensions[2]; k++ ){
+              var dd = d[i][j][k];
+              if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+
+              if(k == 0){
+              pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
+              }
+              if(k == 1){
+              pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
+              }
+              if(k == 2){
+              pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
+              }
+            }
+        }//undefined
+        else {
+          var dd = d[i][j];
+          if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+          pixel_array += '<span class="rgb_red_class" style="color:rgb(120, 121, 128); list-style-type:none;">'+ dd  +',</span>'
+        }//else
+            pixel_array += '</span>'
+
+        }//j
+        pixel_array += '</li>'
+      }
+      pixel_array += '</ul>'
+      //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+      $('.grey-scale-array').html(pixel_array)
+      $(".rgb_class-conv").css("font-size", '1.2em');
+        //------------- END -------------------//
+    })
 
 
     $.ajax({
@@ -1040,7 +917,7 @@ $("#convolution").click (function(evt){
           data = JSON.parse(data)
 
           global_kernel_file = data[0]
-          global_kernel_array = data[1]
+          global_kernel_array = JSON.parse(data[1])
       },
       errr: function(err) {  console.error(err)  }
   })//$.ajax
@@ -1462,16 +1339,74 @@ $("#max-pooling").click(function(e){
 
       $.ajax({
         url: "/max-poll-cnn-files",
-        data: {'kernel_file': global_kernel_file},
+        data: {'kernel_file': "OK"},
         cache: false,
-        contentType: false,
-        processData: false,
         type: 'post',
         success: function (data) {
           var rdata = JSON.parse(data)
-          //console.log(data)
-            $(".upload-image-container img").empty()
-            $(".upload-image-container img").attr('src', '/'+rdata[0])
+            global_max_pooling_array = JSON.parse(rdata[1])
+
+            $(".max_pooling_image_container img").remove()
+            //$(".max_pooling_image_container img").attr('src', '/'+rdata[0])
+            // .....................................................   //
+            var conv_margin_top = parseInt( 3.15*global_image_file_height + 20)
+            $(".max_pooling_image_container").css({
+              'position' : 'absolute' ,
+              'top': conv_margin_top,
+              'left': '6%'
+            })
+
+            $(".max_pooling_image_container").append( $('<div  width:79%;"><p style="position:absolute; z-index:15;top:-25%;left:-4%;"><img id="image-upload" static src= "/' + rdata[0] +'" style="display:inline-block; border:1px solid blue; position:absolute; top:' + conv_margin_top  + 'left:' + global_image_xtop_left +'" alt="image-ici"></div>'))
+
+            // ......................................................  //
+            //Draw  max pooling array
+            const grey_scale_dimensions = [   global_max_pooling_array.length,   global_max_pooling_array[0].length,   global_max_pooling_array[0][0].length ];
+
+
+                  var d = global_max_pooling_array;
+                  var offset_x = parseInt(1.25*global_image_file_width)
+                  var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+                  for (let i=0; i< grey_scale_dimensions[0]; i += global_tile_width){
+                    pixel_array += '<li style="list-style-type:none;">'
+                    for (let j = 0; j< grey_scale_dimensions[1]; j += global_tile_width){
+
+                        var pixel_id = "rgb_" + i + '_' + j
+                        pixel_array += '<span class="rgb_class-pool" id="' + pixel_id +'">'
+                        colors = ['red', 'green', 'blue']
+                      if(typeof grey_scale_dimensions[2] !== 'undefined'){
+                        for (let k=0; k< grey_scale_dimensions[2]; k++ ){
+                          var dd = d[i][j][k];
+                          if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+
+                          if(k == 0){
+                          pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
+                          }
+                          if(k == 1){
+                          pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
+                          }
+                          if(k == 2){
+                          pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
+                          }
+                        }
+                        global_max_poll_flatten_array.push(dd)
+                    }//undefined
+                    else {
+                      var dd = d[i][j];
+                      if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
+                      pixel_array += '<span class="rgb_red_class" style="color:rgb(120, 121, 128); list-style-type:none;">'+ dd  +',</span>'
+                    }//else
+                        pixel_array += '</span>'
+
+                    }//j
+                    pixel_array += '</li>'
+                  }
+                  pixel_array += '</ul>'
+                  //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+                  $('.max-pooling-array').html(pixel_array)
+                  $(".rgb_class-pool").css("font-size", '1.2em');
+
+
+            // .....................................................  //
         },
         error: function(err){console.log(err)}
       })
@@ -1488,16 +1423,49 @@ $("#fully-conn").click(function(e){
 
       $.ajax({
         url: "/fully-conn-cnn",
-        data: {'kernel_file': "ok"},
+        data: {'fully_row': global_tile_width_copy}, //normally & but we cannot see 1 pixel row
         cache: false,
-        contentType: false,
-        processData: false,
         type: 'post',
         success: function (data) {
+          console.log(data)
           var rdata = JSON.parse(data)
-          //console.log(data)
-            $(".upload-image-container img").empty()
-            $(".upload-image-container img").attr('src', '/'+rdata[0])
+
+            fully_coonected_img_path = rdata[0]
+            fully_connected_img_array = JSON.parse(rdata[1])
+
+            $(".fully_connected_image_container img").remove()
+            //$(".max_pooling_image_container img").attr('src', '/'+rdata[0])
+            // .....................................................   //
+            var conv_margin_top = parseInt( 4.15*global_image_file_height + 20)
+            $(".fully_connected_image_container").css({
+              'position' : 'absolute' ,
+              'top': conv_margin_top,
+              'left': '6%'
+            })
+
+            $(".fully_connected_image_container").append( $('<div  width:79%;"><p style="position:absolute; z-index:15;top:-25%;left:-4%;"><img id="image-upload" static src= "/' + rdata[0] +'" style="display:inline-block; border:1px solid blue; position:absolute; top:' + conv_margin_top  + 'left:' + global_image_xtop_left +'" alt="image-ici"></div>'))
+
+            //...............
+            // ......................................................  //
+            //Draw  max pooling array
+
+            //console.log("fully connected: ", fully_connected_img_array)
+            const grey_scale_dimensions = fully_connected_img_array.length
+
+                  var d = fully_connected_img_array;
+                  var offset_x = parseInt(1.25*global_image_file_width)
+                  var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
+                  for (let i=0; i< grey_scale_dimensions; i += global_tile_width){
+                    pixel_array += '<li style="list-style-type:none; display:inline-block;">'
+
+                  pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ d[i]  +',</span>'
+                          pixel_array += '</li>'
+                    }//j
+                  pixel_array += '</ul>'
+                  //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
+                  $('.fully-connected-array').html(pixel_array)
+                  $(".rgb_class-fully").css("font-size", '1.2em');
+            // ........................................
         },
         error: function(err){console.log(err)}
       })

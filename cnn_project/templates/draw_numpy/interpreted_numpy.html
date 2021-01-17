@@ -1,73 +1,74 @@
+{% extends 'base.html' %}
 {% load static %}
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>maths-physic-code</title>
-    <link rel="stylesheet"   href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+{% block content %}
+<!--    ..............................NAVBAR UPLOAD FILE.................................. -->
 
-    {% block stylesheet %}{% endblock %}
-  </head>
-  <body>
 
-<!--    ......................................NAVBAR UPLOAD FILE ............................................ -->
-    <nav class="navbar-container">
-      <ul>
-        <li><a href="#" id="cnn-load-Image">Upload-Image</a> </li>
-        <li><a href="#" id="cnn-grey-scale">GreyScale</a> </li>
-        <li><a href="#" id="cnn-image-grid" >Pixel</a> </li>
-        <li><a href="#" id="build_kernel">Build-kernel</a> </li>
-        <li><a href="#" id="convolution">Convolution</a> </li>
-        <li><a href="#"id="max-pooling" >Max Pooling</a> </li>
-        <li><a href="#"id="fully-conn" >Full Conn</a> </li>
-        <li><a href="#"id="train-conn" >Training NN</a> </li>
-        <li><a href="#"id="predict-conn" >Prediction</a> </li>
-        <li>
-          <select name="pets" id="nympy-functions">
-            <option value="">-- Please numpy funtion --</option>
-            {% for function in numpy_functions %}
-            <option value="{{ func }}">{{ function }}</option>
-            {% endfor %}
-          </select>
-         </li>
-        <li id="button-zoom" style="position:absolute; width:5%; right:12;">
-
-        </li>
-      </ul>
-      <p class="reload-page"><button onClick="window.location.reload()"><span class=reload>&#x21bb;</span></button></p>
-    </nav>
     <!--  ................................UPLOAD .......................................... -->
-    <div class="popup-upload-file-container" style="display:none; margin:2px; padding:0;">
+    <!-- <div class="popup-upload-file-container" style="display:none; margin:2px; padding:0;">
       <h1>   Dynamic Upload Example </h1>
-      <input type="file" id="upload_file"  data-csrf-token="{{ csrf_token }}" multiple>
-    </div><!-- end class="popup -->"
-    <!--  ........................................................................................ -->
+      <input type="file" id="upload_file"  data-csrf-token="{{ csrf_token }}" accept="image/gif, image/jpeg, image/png ,image/jpg"  multiple>
+      <button type='submit'>
+          Submit
+      </button>
+    </div> --> <!-- end class="popup -->
+
+    <div class="fileupload-container"><div id="fileuploader">Upload</div></div>
+
+    <!-- <div class="container pt-4">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th class="text-center">N°</th>
+            <th class="text-center">images</th>
+            <th class="text-center">remove</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-md btn-primary"
+        id="addBtn" type="button">
+      Add new Row
+    </button>
+  </div> -->
+    <!--  ............................................................................ -->
     <div class="upload-image-container">
     </div>
-    <div class="upload-image-image-container">
-    </div>
-    <!--  ........................................................................................ -->
+
+    <!--  ............................................................................. -->
     <div class="board-container">
             <div id="board"> </div>
     </div>
     <!-- ..............................................................................  -->
-    <!-- ........................... MODAL PU UP ......................................  -->
+    <!-- ...................... MODAL FILTER POP UP ...............................  -->
     <div class="form-popup" id="myForm">
-  <form  class="form-container">
-    <h1>Filter</h1>
+      <form  class="form-container">
+        <h1>Filter</h1>
 
-    <label for="kernelv"><b>Kernel</b></label>
-    <input type="text" placeholder="filter-values" name="filter" required>
+        <label for="kernelv"><b>Kernel</b></label>
+        <input type="text" placeholder="filter-values" name="filter" required>
 
 
-    <button type="submit" class="btn" name="submit-filter">Submit</button>
-    <button type="submit" class="btn cancel" name="reset-filter" >Close</button>
-  </form>
-</div>
+        <button type="submit" class="btn" name="submit-filter">Submit</button>
+        <button type="submit" class="btn cancel" name="reset-filter" >Close</button>
+      </form>
+    </div>
 
     <!-- .............................................................................  -->
     <!-- ...................... conv image result    .................................  -->
     <div class="convolution_image_container">  </div>
+
+    <!-- .............................................................................  -->
+    <!-- ...................... MAX POOLING    .................................  -->
+    <div class="max_pooling_image_container">  </div>
+
+    <!-- .............................................................................  -->
+    <!-- ...................... FULLY CONNECTED IMAGE    .................................  -->
+    <div class="fully_connected_image_container">  </div>
 
 
     <!-- .............................................................................  -->
@@ -78,25 +79,15 @@
        <!-- <svg width="960" height="500"></svg> -->
        <div class="image-channels" style="position:absolute; z-index:5; width:58%; height:90%;border:1px solid blue; top:12%; left:40%;"></div>
 
-       <!--                                                            -->
-      <!-- <script type="text/javascript" src="{% static 'js/jquery-3.5.1.min.js' %}"></script> -->
-      <!-- Latest compiled and minified CSS -->
+       <!-- ...................... GREY SCALE ARRAY ...................... -->
+       <div class="grey-scale-array" style="position:absolute; z-index:5; width:18%; height:40%;border:1px solid orange; top: 64%; left:6%;"></div>
 
-      <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
-      <script src="https://d3js.org/d3-array.v2.min.js"></script>
-      <script src="https://d3js.org/d3-color.v2.min.js"></script>
-      <script src="https://d3js.org/d3-format.v2.min.js"></script>
-      <script src="https://d3js.org/d3-interpolate.v2.min.js"></script>
-      <script src="https://d3js.org/d3-time.v2.min.js"></script>
-      <script src="https://d3js.org/d3-time-format.v3.min.js"></script>
-      <script src="https://d3js.org/d3-scale.v3.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.js"></script>
-      <script src="http://d3js.org/d3.v4.js"></script>
-      <script type="text/javascript"  src="{% static 'js/d3-3d.js' %}"></script>
+       <!-- ...................  MAX POOLING ARRAY .....................   --->
+       <div class="max-pooling-array" style="position:absolute; z-index:5; width:18%; height:40%;border:1px solid orange; top: 119%; left:6%;"></div>
+
+       <!-- ...................  FULLY CONNECTED ARRAY .....................   --->
+       <div class="fully-connected-array" style="position:absolute; z-index:5; width:18%; height:40%;border:1px solid orange; top: 151%; left:4%;"></div>
 
 
-      <script type="text/javascript" src="{% static 'js/index.js' %}" ></script>
-      {% block javascript %}{% endblock  %}
-  </body>
-</html>
+  </div>
+{% endblock %}
