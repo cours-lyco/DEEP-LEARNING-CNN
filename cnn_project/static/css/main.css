@@ -80,13 +80,13 @@
 }}
 
 /* file upload */
-.cnn-load-Image-class {
-  "border:1px solid orange;
+/*.cnn-load-Image-class {
+  border:1px solid orange;
   position : absolute;
   top:50px;left:23px;"
   width:35%;
   margin: 0 auto;
-}
+} */
 
 svg { position:absolute; top:0;}
 

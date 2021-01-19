@@ -3,6 +3,30 @@ $(
     //.........................................................................
     //                  UPLOAD FILE
     //.........................................................................
+    window.global_toogle_red_channel = false
+    window.global_toogle_green_channel = false
+    window.global_toogle_blue_channel = false
+    window.global_toogle_grey_channel = false
+    window.global_toogle_original_channel = false
+
+    uploaded_img_rect_width = 400
+    uploaded_img_rect_height = 400
+    x0 = 50
+    y0 = 50
+
+    d3.selection.prototype.moveToBack = function() {
+        return this.each(function() {
+            var firstChild = this.parentNode.firstChild;
+            if (firstChild) {
+                this.parentNode.insertBefore(this, firstChild);
+            }
+        });
+    };
+
+
+    var svg = d3.select("body").append("svg")
+              .attr("width", 1000)
+              .attr("height", 4000)
     $(".upload-image-container").css('z-index', 300)
     $("#fileuploader").uploadFile({
 
@@ -54,324 +78,1133 @@ $(
              "blue_channel": rdata[2],
              "img_file_path": JSON.parse(rdata[3]),
              "image_array": JSON.parse(rdata[4]),
-             "grey_scale_img_path": rdata[5],
-             "grey_scale_array": JSON.parse(rdata[6])
+             "grey_channel": rdata[5],
+             "grey_scale_array": JSON.parse(rdata[6]),
+             "img_width": rdata[7],
+             "img_height": rdata[8],
+             "img_shape": JSON.parse(rdata[9])
          }
+
           global_uploaded_image_data.push(obj);
-var svg = d3.select("body").append("svg")
-          .attr("width", 1000)
-          .attr("height", 1200)
+          current_img_width = obj['img_width']
+          current_img_height = obj['img_height']
+
 
 var defs = svg.append('svg:defs');
 
     obj_index = global_uploaded_image_data.indexOf(obj);
-console.log("obj_index: ", obj_index)
+    var offsety = obj_index * uploaded_img_rect_height + 30
+
+    //Center uploaded image
+  if(current_img_width > uploaded_img_rect_width){current_img_width = uploaded_img_rect_width}
+    if(current_img_height > uploaded_img_rect_height){current_img_height = uploaded_img_rect_height}
+
   defs.append("svg:pattern")
-    .attr("id", "grump_avatar" + obj_index)
-    .attr("width", 300)
-    .attr("height", 450)
+    .attr("id", "upload-img-def-id_" + obj_index)
+    .attr("width", uploaded_img_rect_width)
+    .attr("height", uploaded_img_rect_height)
     .attr("patternUnits", "userSpaceOnUse")
     .append("svg:image")
     .attr("xlink:href", "/media/" + obj['img_file_path'])
-    .attr("width", 300)
-    .attr("height", 450)
-    .attr("x", 50)
-    .attr("y", 50);
+    .attr("width", current_img_width)
+    .attr("height", current_img_height)
+    .attr("x", 50 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+    .attr("y", 50 + parseInt(uploaded_img_rect_height - current_img_height)/2);
 
-    var rect = svg.append('rect')
-              .attr("transform", "translate(" + 0 + "," + 30 + ")")
-              .attr("x", 50)
-              .attr("y", 50)
-              .attr("width", 300)
-              .attr("height", 450)
+    var group = svg.append("g")
+                .attr("id", "mygroup_" + obj_index)
+                .attr("transform", "translate(" + 0 + "," + offsety + ")")
+
+    var rect = group.append('rect')
+              .attr("x", x0)
+              .attr("y", y0)
+              .attr("width", uploaded_img_rect_width)
+              .attr("height", uploaded_img_rect_height)
+              .attr("id", "d3-rect-obj-index_"+ obj_index)
               .style("fill", "#fff")
-              .style("fill", "url(#grump_avatar" + obj_index + ")")
-              .style("border", "4px solid purple")
-
-          // Adding a row inside the tbody.
-          //console.log(global_uploaded_image_data)
-          /*$('#tbody').append(`<tr id="R${global_uploaded_image_data.length}">
-          <td class="row-index text-center">
-                <p>${global_uploaded_image_data.length}</p>
-          </td>
-          <td> <a href='#'><img style="display:inline-block;width:250px; height:350px; text-align:center;" src="/media/${global_uploaded_image_data[-1 + global_uploaded_image_data.length]['img_file_path']}"></a>
-          </td>
-           <td class="text-center">
-            <button class="btn btn-danger remove"
-                type="button">Remove</button>
-            </td>
-           </tr>`); */
+              .style("fill", "url(#upload-img-def-id_" + obj_index + ")")
+              .attr('stroke', '#633974')
+              .attr('stroke-dasharray', '10,5')
+              .attr('stroke-linecap', 'butt')
+              .attr('stroke-width', '3')
+
+//......................................................................................
+//                        red channel button
+//.....................................................................................
+    var red_circle = group.append('circle')
+              .attr('cx',150)
+              .attr('cy', 60)
+              .attr('r',10)
+              .attr('stroke', 'red')
+              .attr('fill', 'red')
+              .attr('class', 'upload-image-menu_')
+              .attr('id', 'upload-img-red-id_' + obj_index)
+              .on("mouseover", function(){
+                  d3.select(this)
+                      .attr("r", 12)
+                      .attr("stroke", 'purple')
+                      .style("cursor", "pointer");
+
+              })
+              .on("mouseout", function(){
+                    d3.select(this)
+                            .attr("r", 10)
+                            .attr("stroke", 'red')
+
+
+              })
+              .on("click", function(e){
+                 d3.event.preventDefault();
+
+                global_toogle_green_channel = false
+                global_toogle_blue_channel = false
+                global_toogle_grey_channel = false;
+                //global_toogle_original_channel = false
+
+                  if (!global_toogle_red_channel){
+                     d3.select("#d3-rect-obj-index_"+ img_index).raise();
+                     d3.select("upload-img-def-id_" + img_index).raise();
+                     //d3.select("upload-img-red-id_" + img_index).raise();
+
+                     // move to front
+
+                     //.....................................................
+                  //stylize clicked rect
+                  var all_rects = d3.selectAll("rect")["_groups"]
+
+                  var p = d3.select(this)
+                  var clicked_id = p.attr("id")
+                  var img_index = parseInt(clicked_id.split('_')[1])
+
+                  var clicked_img_data = global_uploaded_image_data[img_index];
+
+                  var drect = all_rects.filter(function(d){
+                       var id =  d[0].getAttribute("id")
+                        let index = parseInt(id.split("_")[1])
+                       return index == img_index
+                  })
+
+                  var all_defs = d3.selectAll('defs')["_groups"]
+                  var ddef = all_defs.filter(function(d){
+                  var id = d[0].firstChild.getAttribute("id")
+
+                  let  index = parseInt( id.split("_")[1])
+                       return index == img_index
+                  })
+
+        var defs2 =  defs.append("svg:pattern")
+                    .attr("id", "upload-img-def-id-00a_" + img_index)
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height", uploaded_img_rect_height)
+                    .attr("patternUnits", "userSpaceOnUse")
+                    .append("svg:image")
+                    .attr("xlink:href", "/" + clicked_img_data['red_channel'])
+                    .attr("width", current_img_width)
+                    .attr("height", current_img_height)
+                    .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                    .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+        //var rect2 = d3.select("#d3-rect-obj-index_"+ img_index) ||
+        var rect2 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                    //transition for old border to new
+                    rect2.transition().duration(2000).attr('stroke', 'red')
+
+
+                    rect2
+                    .attr("x", x0)
+                    .attr("y",y0)
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height",  uploaded_img_rect_height)
+                    .style("fill", "#fff")
+                    .style("fill", "url(#upload-img-def-id-00a_" + img_index + ")")
+                    .attr('stroke', '#2378ae')
+                    .attr('stroke-dasharray', '10,5')
+                    .attr('stroke-linecap', 'butt')
+                    .attr('stroke-width', '3')
+
+
 
+                  global_toogle_red_channel = true; //..........................
+                }else {
 
+                  var all_rects = d3.selectAll("rect")["_groups"]
 
-         global_image_red_channel_path = rdata[0]
-         global_image_green_channel_path = rdata[1]
-         global_image_blue_channel_path = rdata[2]
+                  var p = d3.select(this)
+                  var clicked_id = p.attr("id")
+                  var img_index = parseInt(clicked_id.split('_')[1])
 
-         files_path = JSON.parse(rdata[3])
-         global_images_array = JSON.parse( rdata[4] )
+                  var clicked_img_data = global_uploaded_image_data[img_index];
 
-         global_images_grey_scale_array_path = rdata[5]
-         global_images_grey_scale_array = JSON.parse( rdata[6])
+                  var drect = all_rects.filter(function(d){
+                       var id =  d[0].getAttribute("id")
+                        let index = parseInt(id.split("_")[1])
+                       return index == img_index
+                  })
 
-         global_tile_width = global_tile_width_copy
-         global_image_file_width = global_image_file_width_copy
-         global_image_file_height = global_image_file_height_copy
+                  var all_defs = d3.selectAll('defs')["_groups"]
+                  var ddef = all_defs.filter(function(d){
+                  var id = d[0].firstChild.getAttribute("id")
 
-         global_tile_width = global_tile_width_copy
+                  let  index = parseInt( id.split("_")[1])
+                       return index == img_index
+                  })
 
-       if (files_path.length > 0){
-         var elt = $(".upload-image-container")
-         $(".upload-image-container").css('border', '1px solid black;')
+                  d3.select("#d3-rect-obj-index_"+ img_index).lower();
+                  d3.select("#d3-def-obj-index_"+ img_index).lower();
+                  //d3.select("upload-img-red-id_" + img_index).lower();
 
-        /* $(".upload-image-container").append( $('<div style= width:79%; text-align:center;"><p style="position:absolute; text-align:center; z-index:10;top:-15%;left:-4%; text-align:center;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + files_path[0] +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))  */
+        var defs3 =  defs.append("svg:pattern")
+                    .attr("id", "upload-img-def-id-000a_" + img_index)
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height", uploaded_img_rect_height)
+                    .attr("patternUnits", "userSpaceOnUse")
+                    .append("svg:image")
+                    .attr("xlink:href", "/media/" + obj['img_file_path'])
+                    .attr("width", current_img_width)
+                    .attr("height", current_img_height)
+                    .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                    .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
 
-         localStorage.setItem('original_image', files_path[0]);
-         //localStorage.removeItem('original_image');
 
-         //$(".popup-upload-file-container").hide() //hide input file
-         //................... Display Pixel ..........................
+        var rect3 = d3.select("#d3-rect-obj-index_"+ img_index)
 
-         const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
+                      //transition for old border to new
+                    rect3.transition().duration(200).attr('stroke', '#633974')
 
+                    rect3
+                    .attr("x", x0)
+                    .attr("y",y0)
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height",  uploaded_img_rect_height)
+                    .style("fill", "#fff")
+                    .style("fill", "url(#upload-img-def-id-000a_" + img_index + ")")
+                    .attr('stroke', '#2378ae')
+                    .attr('stroke-dasharray', '10,5')
+                    .attr('stroke-linecap', 'butt')
+                    .attr('stroke-width', '3')
 
-         $('.image-channels').css('font-size', '1.4em');
-         $('.image-channels').css('left', '15')
-         $('.image-channels').css('width', '97%')
-         $('.image-channels').css('z-index', '-1')
 
-         $(".upload-image-container img").css('width', global_image_file_width )
-         $(".upload-image-container img").css('height', global_image_file_height )
 
-         //var imag_width = $('#image-upload').width() //0
-         //var imag_height = $('#image-upload').height() //0
-         //console.log("dimensiosn: ", dimensions)
-
-         //var global_tile_width = 25;
-
-
-         var d = global_images_array;
-         var offset_x = parseInt(1.25*global_image_file_width)
-         var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
-         for (let i=0; i< dimensions[0]; i += global_tile_width){
-           pixel_array += '<li style="list-style-type:none;">'
-           for (let j = 0; j< dimensions[1]; j += global_tile_width){
-
-               var pixel_id = "rgb_" + i + '_' + j
-               pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
-               colors = ['red', 'green', 'blue']
-               for (let k=0; k< dimensions[2]; k++ ){
-                 var dd = d[i][j][k];
-                 if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
-
-                 if(k == 0){
-                 pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
-                 }
-                 if(k == 1){
-                 pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
-                 }
-                 if(k == 2){
-                 pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
-                 }
-               }
-               pixel_array += '</span>'
-
-           }//j
-           pixel_array += '</li>'
-         }
-         pixel_array += '</ul>'
-         //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
-         $('.image-channels').html(pixel_array)
-         $(".rgb_class").css("font-size", '1.0em');
-         //$('.image-channels').text(JSON.stringify(global_images_array[x_prime][y_prime]))
-        }// if files_path.length > 0
-      },//onSuccess
-
-       onError: function (files, status, message,pd) {},
-
-       onCancel: function(files,pd) {},
-
-       downloadCallback:false,
-
-       deleteCallback: false,
-
-       afterUploadAll: false,
-
-       uploadButtonClass: "ajax-file-upload",
-
-       dragDropStr: "<span><b>Drag &amp; Drop Files</b></span>",
-
-       abortStr: "Abort",
-
-       cancelStr: "Cancel",
-
-       deletelStr: "Delete",
-
-       doneStr: "Done",
-
-       multiDragErrorStr: "Multiple File Drag &amp; Drop is not allowed.",
-
-       extErrorStr: "is not allowed. Allowed extensions: ",
-
-       sizeErrorStr: "is not allowed. Allowed Max size: ",
-
-       uploadErrorStr: "Upload is not allowed",
-
-       maxFileCountErrorStr: " is not allowed. Maximum allowed files are:",
-
-       downloadStr:"Download",
-
-       showQueueDiv:false,
-
-       statusBarWidth:500,
-
-       dragdropWidth:500
-
-  });
-
-
-
-    $("#cnn-load-Image").click(function(e){
-      e.preventDefault()
-      $(".popup-upload-file-container").toggle("slide");
-
-    })
-
-    // Get the add new upload link.
-    //$("#upload_file").change(function () {
-      $(".popup-upload-file-container button").click(function(e){
-        console.log("you select")
-      var _URL = window.URL || window.webkitURL;
-      var file, img;
-       if ((file = this.files[0])) {
-           img = new Image();
-           var objectUrl = _URL.createObjectURL(file);
-           img.onload = function () {
-               global_image_file_width = this.width ;
-               global_image_file_height =  this.height ;
-
-               global_image_file_width_copy = this.width ;
-               global_image_file_height_copy =  this.height ;
-
-               _URL.revokeObjectURL(objectUrl);
-           };
-           img.src = objectUrl;
-       }
-
-      var data = new FormData();
-      $.each($("#upload_file")[0].files, function(i, file) {
-        data.append("file", file);
-      });
-      data.append("csrfmiddlewaretoken", $(this).attr("data-csrf-token"));
-
-      $.ajax({
-        url: "/upload-cnn-files",
-        data: data,
-        cache: false,
-        contentType: false,
-        processData: false,
-        type: 'post',
-        beforeSend: function () {
-          // before send, display loading, etc...
-        },
-        success: function (data) {
-
-                var rdata = JSON.parse(data)
-
-                global_image_red_channel_path = rdata[0]
-                global_image_green_channel_path = rdata[1]
-                global_image_blue_channel_path = rdata[2]
-
-                files_path = JSON.parse(rdata[3])
-                global_images_array = JSON.parse( rdata[4] )
-
-                global_images_grey_scale_array_path = rdata[5]
-                global_images_grey_scale_array = JSON.parse( rdata[6])
-
-                global_tile_width = global_tile_width_copy
-                global_image_file_width = global_image_file_width_copy
-                global_image_file_height = global_image_file_height_copy
-
-                global_tile_width = global_tile_width_copy
-
-              if (files_path.length > 0){
-                var elt = $(".upload-image-container")
-                $(".upload-image-container").css('border', '1px solid black;')
-
-                $(".upload-image-container").append( $('<div style= width:79%; text-align:center;"><p style="position:absolute; text-align:center; z-index:10;top:-15%;left:-4%; text-align:center;"><button id="zoom-out">Z-</button><button id="zoom-in">Z+</button><button id="display_original_image">img</button><button id="display_red_channel">Red</button><button id="display_green_channel">Green</button><button id="display_blue_channel">Blue</button><button id="reduce_uploaded_image">-</button><button id="close_upload_file">X</button></p><img id="image-upload" static src= "/media/' + files_path[0] +'" style="display:inline-block; border:1px solid blue; position:absolute;" alt="image-ici"></div>'))
-
-                localStorage.setItem('original_image', files_path[0]);
-                //localStorage.removeItem('original_image');
-
-                $(".popup-upload-file-container").hide() //hide input file
-                //................... Display Pixel ..........................
-
-                const dimensions = [ global_images_array.length, global_images_array[0].length, global_images_array[0][0].length ]; //[276, 182, 3]
-
-
-                $('.image-channels').css('font-size', '1.4em');
-                $('.image-channels').css('left', '15')
-                $('.image-channels').css('width', '97%')
-                $('.image-channels').css('z-index', '-1')
-
-                $(".upload-image-container img").css('width', global_image_file_width )
-                $(".upload-image-container img").css('height', global_image_file_height )
-
-                //var imag_width = $('#image-upload').width() //0
-                //var imag_height = $('#image-upload').height() //0
-                console.log("dimensiosn: ", dimensions)
-
-                //var global_tile_width = 25;
-
-
-                var d = global_images_array;
-                var offset_x = parseInt(1.25*global_image_file_width)
-                var pixel_array = '<ul class="pixel-array-displayed" style="position:absolute; left:'+ offset_x +'px; padding:">'
-                for (let i=0; i< dimensions[0]; i += global_tile_width){
-                  pixel_array += '<li style="list-style-type:none;">'
-                  for (let j = 0; j< dimensions[1]; j += global_tile_width){
-
-                      var pixel_id = "rgb_" + i + '_' + j
-                      pixel_array += '<span class="rgb_class" id="' + pixel_id +'">'
-                      colors = ['red', 'green', 'blue']
-                      for (let k=0; k< dimensions[2]; k++ ){
-                        var dd = d[i][j][k];
-                        if(dd < 100 ){ dd = "&nbsp;&nbsp;" + dd}
-
-                        if(k == 0){
-                        pixel_array += '<span class="rgb_red_class" style="color:red; list-style-type:none;">['+ dd  +',</span>'
-                        }
-                        if(k == 1){
-                        pixel_array += '<span class="rgb_green_class" style="color:green; list-style-type:none;">'+ dd  +', </span>'
-                        }
-                        if(k == 2){
-                        pixel_array += '<span class="rgb_blue_class" style="color:blue; list-style-type:none;">'+ dd +']</span>'
-                        }
-                      }
-                      pixel_array += '</span>'
-
-                  }//j
-                  pixel_array += '</li>'
+                    global_toogle_red_channel = false;
                 }
-                pixel_array += '</ul>'
-                //$('.image-channels').text(JSON.stringify(JSON.stringify(global_images_array)))
-                $('.image-channels').html(pixel_array)
-                $(".rgb_class").css("font-size", '1.0em');
-                //$('.image-channels').text(JSON.stringify(global_images_array[x_prime][y_prime]))
+              })//on click red channel
+
+//......................................................................................
+//                        green channel button
+//.....................................................................................
+    var green_circle = group.append('circle')
+                    .attr('cx',180)
+                    .attr('cy', 60)
+                    .attr('r',10)
+                    .attr('stroke', 'green')
+                    .attr('fill', 'green')
+                    .attr('class', 'upload-image-menu_' + obj_index)
+                    .attr('id', 'upload-img-green-id_' + obj_index)
+                    .on("mouseover", function(){
+                        d3.select(this)
+                            .attr("r", 12)
+                            .attr("stroke", 'purple')
+                            .style("cursor", "pointer");
+
+                    })
+                    .on("mouseout", function(){
+                          d3.select(this)
+                                  .attr("r", 10)
+                                  .attr("stroke", 'green')
+                    })
+                    .on("click", function(e){
+                       d3.event.preventDefault();
+
+                      global_toogle_red_channel = false
+                      global_toogle_blue_channel = false
+                      global_toogle_grey_channel = false;
+                      //global_toogle_original_channel = false
+
+                        if (!global_toogle_green_channel){
+
+                           d3.select("#d3-rect-obj-index_"+ img_index).raise();
+                           d3.select("upload-img-def-id_" + img_index).raise();
+                           //d3.select("upload-img-red-id_" + img_index).raise();
+
+                           // move to front
+
+                           //.....................................................
+                        //stylize clicked rect
+                        var all_rects = d3.selectAll("rect")["_groups"]
+
+                        var p = d3.select(this)
+                        var clicked_id = p.attr("id")
+                        var img_index = parseInt(clicked_id.split('_')[1])
+
+                        var clicked_img_data = global_uploaded_image_data[img_index];
+
+                        var drect = all_rects.filter(function(d){
+                             var id =  d[0].getAttribute("id")
+                              let index = parseInt(id.split("_")[1])
+                             return index == img_index
+                        })
+
+                        var all_defs = d3.selectAll('defs')["_groups"]
+                        var ddef = all_defs.filter(function(d){
+                        var id = d[0].firstChild.getAttribute("id")
+
+                        let  index = parseInt( id.split("_")[1])
+                             return index == img_index
+                        })
 
 
-                //.............................................................
-            }// if files_path.length > 0
+              var defs2 =  defs.append("svg:pattern")
+                          .attr("id", "upload-img-def-id-00b_" + img_index)
+                          .attr("width", uploaded_img_rect_width)
+                          .attr("height", uploaded_img_rect_height)
+                          .attr("patternUnits", "userSpaceOnUse")
+                          .append("svg:image")
+                          .attr("xlink:href", "/" + clicked_img_data['green_channel'])
+                          .attr("width", current_img_width)
+                          .attr("height", current_img_height)
+                          .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                          .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
 
-        },
-        error: function (err) {
-          console.error(err)
-          // error handling...
-        }
-      });
 
-    });//end change
+              //var rect2 = d3.select("#d3-rect-obj-index_"+ img_index) ||
+              var rect2 = d3.select("#d3-rect-obj-index_"+ img_index)
 
+                          //transition for old border to new
+                          rect2.transition().duration(2000).attr('stroke', 'green')
+
+
+                          rect2
+                          .attr("x", x0)
+                          .attr("y",y0)
+                          .attr("width", uploaded_img_rect_width)
+                          .attr("height",  uploaded_img_rect_height)
+                          .style("fill", "#fff")
+                          .style("fill", "url(#upload-img-def-id-00b_" + img_index + ")")
+                          .attr('stroke', '#2378ae')
+                          .attr('stroke-dasharray', '10,5')
+                          .attr('stroke-linecap', 'butt')
+                          .attr('stroke-width', '3')
+
+
+
+                        global_toogle_green_channel = true; //..........................
+                      }else {
+
+                        var all_rects = d3.selectAll("rect")["_groups"]
+
+                        var p = d3.select(this)
+                        var clicked_id = p.attr("id")
+                        var img_index = parseInt(clicked_id.split('_')[1])
+
+                        var clicked_img_data = global_uploaded_image_data[img_index];
+
+                        var drect = all_rects.filter(function(d){
+                             var id =  d[0].getAttribute("id")
+                              let index = parseInt(id.split("_")[1])
+                             return index == img_index
+                        })
+
+                        var all_defs = d3.selectAll('defs')["_groups"]
+                        var ddef = all_defs.filter(function(d){
+                        var id = d[0].firstChild.getAttribute("id")
+
+                        let  index = parseInt( id.split("_")[1])
+                             return index == img_index
+                        })
+
+                        d3.select("#d3-rect-obj-index_"+ img_index).lower();
+                        d3.select("#d3-def-obj-index_"+ img_index).lower();
+                        //d3.select("upload-img-red-id_" + img_index).lower();
+
+              var defs3 =  defs.append("svg:pattern")
+                          .attr("id", "upload-img-def-id-000b_" + img_index)
+                          .attr("width", uploaded_img_rect_width)
+                          .attr("height", uploaded_img_rect_height)
+                          .attr("patternUnits", "userSpaceOnUse")
+                          .append("svg:image")
+                          .attr("xlink:href", "/media/" + obj['img_file_path'])
+                          .attr("width", current_img_width)
+                          .attr("height", current_img_height)
+                          .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                          .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+              var rect3 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                            //transition for old border to new
+                          rect3.transition().duration(200).attr('stroke', '#633974')
+
+                          rect3
+                          .attr("x", x0)
+                          .attr("y",y0)
+                          .attr("width", uploaded_img_rect_width)
+                          .attr("height",  uploaded_img_rect_height)
+                          .style("fill", "#fff")
+                          .style("fill", "url(#upload-img-def-id-000b_" + img_index + ")")
+                          .attr('stroke', '#2378ae')
+                          .attr('stroke-dasharray', '10,5')
+                          .attr('stroke-linecap', 'butt')
+                          .attr('stroke-width', '3')
+
+
+
+                          global_toogle_green_channel = false;
+                      }
+                    })//on click green channel
+
+//......................................................................................
+//                        blue channel button
+//.....................................................................................
+
+var blue_circle = group.append('circle')
+                      .attr('cx',210)
+                      .attr('cy', 60)
+                      .attr('r',10)
+                      .attr('stroke', 'blue')
+                      .attr('fill', 'blue')
+                      .attr('class', 'upload-image-menu_' + obj_index)
+                      .attr('id', 'upload-img-blue-id_' + obj_index)
+                      .on("mouseover", function(){
+                          d3.select(this)
+                              .attr("r", 12)
+                              .attr("stroke", 'purple')
+                              .style("cursor", "pointer");
+
+                      })
+                      .on("mouseout", function(){
+                            d3.select(this)
+                                    .attr("r", 10)
+                                    .attr("stroke", 'blue')
+
+
+                      })
+                      .on("click", function(){
+
+                         d3.event.preventDefault();
+                        global_toogle_green_channel = false
+                        global_toogle_red_channel = false
+                        global_toogle_grey_channel = false;
+                        //global_toogle_original_channel = false
+
+                          if (!global_toogle_blue_channel){
+
+                             d3.select("#d3-rect-obj-index_"+ img_index).raise();
+                             d3.select("upload-img-def-id_" + img_index).raise();
+                             //d3.select("upload-img-red-id_" + img_index).raise();
+
+                             // move to front
+
+                             //.....................................................
+                          //stylize clicked rect
+                          var all_rects = d3.selectAll("rect")["_groups"]
+
+                          var p = d3.select(this)
+                          var clicked_id = p.attr("id")
+                          var img_index = parseInt(clicked_id.split('_')[1])
+
+                          var clicked_img_data = global_uploaded_image_data[img_index];
+
+                          var drect = all_rects.filter(function(d){
+                               var id =  d[0].getAttribute("id")
+                                let index = parseInt(id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          var all_defs = d3.selectAll('defs')["_groups"]
+                          var ddef = all_defs.filter(function(d){
+                          var id = d[0].firstChild.getAttribute("id")
+
+                          let  index = parseInt( id.split("_")[1])
+                               return index == img_index
+                          })
+
+
+                var defs2 =  defs.append("svg:pattern")
+                            .attr("id", "upload-img-def-id-00c_" + img_index)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height", uploaded_img_rect_height)
+                            .attr("patternUnits", "userSpaceOnUse")
+                            .append("svg:image")
+                            .attr("xlink:href", "/" + clicked_img_data['blue_channel'])
+                            .attr("width", current_img_width)
+                            .attr("height", current_img_height)
+                            .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                            .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+                //var rect2 = d3.select("#d3-rect-obj-index_"+ img_index) ||
+                var rect2 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                            //transition for old border to new
+                            rect2.transition().duration(2000).attr('stroke', 'blue')
+
+
+                            rect2
+                            .attr("x", x0)
+                            .attr("y",y0)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height",  uploaded_img_rect_height)
+                            .style("fill", "#fff")
+                            .style("fill", "url(#upload-img-def-id-00c_" + img_index + ")")
+                            .attr('stroke', '#2378ae')
+                            .attr('stroke-dasharray', '10,5')
+                            .attr('stroke-linecap', 'butt')
+                            .attr('stroke-width', '3')
+
+
+
+                          global_toogle_blue_channel = true; //..........................
+                        }else {
+
+                          var all_rects = d3.selectAll("rect")["_groups"]
+
+                          var p = d3.select(this)
+                          var clicked_id = p.attr("id")
+                          var img_index = parseInt(clicked_id.split('_')[1])
+
+                          var clicked_img_data = global_uploaded_image_data[img_index];
+
+                          var drect = all_rects.filter(function(d){
+                               var id =  d[0].getAttribute("id")
+                                let index = parseInt(id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          var all_defs = d3.selectAll('defs')["_groups"]
+                          var ddef = all_defs.filter(function(d){
+                          var id = d[0].firstChild.getAttribute("id")
+
+                          let  index = parseInt( id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          d3.select("#d3-rect-obj-index_"+ img_index).lower();
+                          d3.select("#d3-def-obj-index_"+ img_index).lower();
+                          //d3.select("upload-img-red-id_" + img_index).lower();
+
+                var defs3 =  defs.append("svg:pattern")
+                            .attr("id", "upload-img-def-id-000c_" + img_index)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height", uploaded_img_rect_height)
+                            .attr("patternUnits", "userSpaceOnUse")
+                            .append("svg:image")
+                            .attr("xlink:href", "/media/" + obj['img_file_path'])
+                            .attr("width", current_img_width)
+                            .attr("height", current_img_height)
+                            .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                            .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+                var rect3 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                              //transition for old border to new
+                            rect3.transition().duration(200).attr('stroke', '#633974')
+
+                            rect3
+                            .attr("x", x0)
+                            .attr("y",y0)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height",  uploaded_img_rect_height)
+                            .style("fill", "#fff")
+                            .style("fill", "url(#upload-img-def-id-000c_" + img_index + ")")
+                            .attr('stroke', '#2378ae')
+                            .attr('stroke-dasharray', '10,5')
+                            .attr('stroke-linecap', 'butt')
+                            .attr('stroke-width', '3')
+
+
+
+                            global_toogle_blue_channel = false;
+                        }
+                      })//on click blue channel
+
+  //......................................................................................
+  //                        grey channel button
+  //.....................................................................................
+
+    var grey_circle = group.append('circle')
+                      .attr('cx',240)
+                      .attr('cy', 60)
+                      .attr('r',10)
+                      .attr('stroke', 'grey')
+                      .attr('fill', 'grey')
+                      .attr('class', 'upload-image-menu_' + obj_index)
+                      .attr('id', 'upload-img-grey-id_' + obj_index)
+                      .on("mouseover", function(){
+                          d3.select(this)
+                              .attr("r", 12)
+                              .attr("stroke", 'purple')
+                              .style("cursor", "pointer");
+
+                      })
+                      .on("mouseout", function(){
+                            d3.select(this)
+                                    .attr("r", 10)
+                                    .attr("stroke", 'grey')
+
+
+                      })
+                      .on("click", function(){
+                         d3.event.preventDefault();
+
+                        global_toogle_green_channel = false
+                        global_toogle_red_channel = false
+                        global_toogle_blue_channel = false
+                        //global_toogle_original_channel = false
+
+                          if (!global_toogle_grey_channel){
+
+                             d3.select("#d3-rect-obj-index_"+ img_index).raise();
+                             d3.select("upload-img-def-id_" + img_index).raise();
+                             //d3.select("upload-img-red-id_" + img_index).raise();
+
+                             // move to front
+
+                             //.....................................................
+                          //stylize clicked rect
+                          var all_rects = d3.selectAll("rect")["_groups"]
+
+                          var p = d3.select(this)
+                          var clicked_id = p.attr("id")
+                          var img_index = parseInt(clicked_id.split('_')[1])
+
+                          var clicked_img_data = global_uploaded_image_data[img_index];
+
+                          var drect = all_rects.filter(function(d){
+                               var id =  d[0].getAttribute("id")
+                                let index = parseInt(id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          var all_defs = d3.selectAll('defs')["_groups"]
+                          var ddef = all_defs.filter(function(d){
+                          var id = d[0].firstChild.getAttribute("id")
+
+                          let  index = parseInt( id.split("_")[1])
+                               return index == img_index
+                          })
+
+
+                var defs2 =  defs.append("svg:pattern")
+                            .attr("id", "upload-img-def-id-00d_" + img_index)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height", uploaded_img_rect_height)
+                            .attr("patternUnits", "userSpaceOnUse")
+                            .append("svg:image")
+                            .attr("xlink:href", "/" + clicked_img_data['grey_channel'])
+                            .attr("width", current_img_width)
+                            .attr("height", current_img_height)
+                            .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                            .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+                //var rect2 = d3.select("#d3-rect-obj-index_"+ img_index) ||
+                var rect2 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                            //transition for old border to new
+                            rect2.transition().duration(2000).attr('stroke', 'grey')
+
+
+                            rect2
+                            .attr("x", x0)
+                            .attr("y",y0)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height",  uploaded_img_rect_height)
+                            .style("fill", "#fff")
+                            .style("fill", "url(#upload-img-def-id-00d_" + img_index + ")")
+                            .attr('stroke', '#2378ae')
+                            .attr('stroke-dasharray', '10,5')
+                            .attr('stroke-linecap', 'butt')
+                            .attr('stroke-width', '3')
+
+
+
+                          global_toogle_grey_channel = true; //..........................
+                        }else {
+
+                          var all_rects = d3.selectAll("rect")["_groups"]
+
+                          var p = d3.select(this)
+                          var clicked_id = p.attr("id")
+                          var img_index = parseInt(clicked_id.split('_')[1])
+
+                          var clicked_img_data = global_uploaded_image_data[img_index];
+
+                          var drect = all_rects.filter(function(d){
+                               var id =  d[0].getAttribute("id")
+                                let index = parseInt(id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          var all_defs = d3.selectAll('defs')["_groups"]
+                          var ddef = all_defs.filter(function(d){
+                          var id = d[0].firstChild.getAttribute("id")
+
+                          let  index = parseInt( id.split("_")[1])
+                               return index == img_index
+                          })
+
+                          d3.select("#d3-rect-obj-index_"+ img_index).lower();
+                          d3.select("#d3-def-obj-index_"+ img_index).lower();
+                          //d3.select("upload-img-red-id_" + img_index).lower();
+
+                var defs3 =  defs.append("svg:pattern")
+                            .attr("id", "upload-img-def-id-000d_" + img_index)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height", uploaded_img_rect_height)
+                            .attr("patternUnits", "userSpaceOnUse")
+                            .append("svg:image")
+                            .attr("xlink:href", "/media/" + obj['img_file_path'])
+                            .attr("width", current_img_width)
+                            .attr("height", current_img_height)
+                            .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                            .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+
+                var rect3 = d3.select("#d3-rect-obj-index_"+ img_index)
+
+                              //transition for old border to new
+                            rect3.transition().duration(200).attr('stroke', '#633974')
+
+                            rect3
+                            .attr("x", x0)
+                            .attr("y",y0)
+                            .attr("width", uploaded_img_rect_width)
+                            .attr("height",  uploaded_img_rect_height)
+                            .style("fill", "#fff")
+                            .style("fill", "url(#upload-img-def-id-000d_" + img_index + ")")
+                            .attr('stroke', '#2378ae')
+                            .attr('stroke-dasharray', '10,5')
+                            .attr('stroke-linecap', 'butt')
+                            .attr('stroke-width', '3')
+
+
+
+                            global_toogle_grey_channel = false;
+                        }
+                      })//on click grey channel
+//......................................................................................
+//                ZOOM OUT
+//.....................................................................................
+
+    var zoom_out = group.append("text")
+                  .attr("x", 260)
+                  .attr("y", 60)
+                  .attr("dy", ".35em")
+                  .text("Z-")
+                  .attr('stroke', 'purple')
+                  .attr('stroke-width', '2')
+                  .attr('class', 'upload-image-menu_' + obj_index)
+                  .attr('id', 'upload-img-text-zoom-out-id_' + obj_index)
+                  .on("mouseover", function(){
+                      d3.select(this)
+                          .attr("dy", ".47em")
+                          .attr("stroke", 'black')
+                          .style("cursor", "pointer");
+
+                  })
+                  .on("mouseout", function(){
+                        d3.select(this)
+                                .attr("dy", ".35em")
+                                .attr("stroke", 'purple')
+
+                  })
+                  .on("click", function(){
+                     d3.event.preventDefault();
+
+                    var all_rects = d3.selectAll("rect")["_groups"]
+
+                    var p = d3.select(this)
+                    var clicked_id = p.attr("id")
+
+                    var img_index = parseInt(clicked_id.split('_')[1])
+
+                    var clicked_img_data = global_uploaded_image_data[img_index];
+
+                    var drect = all_rects.filter(function(d){
+                         var id =  d[0].getAttribute("id")
+                          let index = parseInt(id.split("_")[1])
+                         return index == img_index
+                    })
+
+                    var all_defs = d3.selectAll('defs')["_groups"]
+                    var ddef = all_defs.filter(function(d){
+                                  var id = d[0].firstChild.getAttribute("id")
+                                  let  index = parseInt( id.split("_")[1])
+                                  return index == img_index
+                    })
+
+                var ddef_id = ddef[0][0].firstChild.getAttribute("id")
+                var def4 = d3.select("#" + ddef_id)
+
+                //uploaded_img_rect_width = parseInt(uploaded_img_rect_width/1.1)
+                //uploaded_img_rect_height = parseInt(uploaded_img_rect_height/1.1)
+
+                current_img_width = parseInt(current_img_width/1.1)
+                current_img_height = parseInt(current_img_height/1.1)
+
+                //remove old image before redraw
+                if(d3.select("#upload-img-id-zoom-out_" + img_index)){
+                  d3.select("#upload-img-id-zoom-out_" + img_index).remove()
+                }
+
+        var index = parseInt(ddef_id.split("_")[1])
+        var data = global_uploaded_image_data[index]
+
+        var current_image = "/media/" + data['img_file_path']
+              if(global_toogle_red_channel){  current_image = "/" + data['red_channel']}
+              else if(global_toogle_green_channel){  current_image = "/" + data['green_channel']}
+              else if(global_toogle_blue_channel){  current_image = "/" + data['blue_channel']}
+              else if(global_toogle_grey_channel){  current_image = "/" + data['grey_channel']}
+
+
+
+        var zoom_out_def = svg.append('svg:defs')
+                    .append("svg:pattern")
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height", uploaded_img_rect_height)
+                    .attr("patternUnits", "userSpaceOnUse")
+                    .attr("id", "upload-img-id-zoom-out_" + img_index)
+                    .append("svg:image")
+                    .attr("xlink:href",  current_image)
+                    .attr("width", current_img_width)
+                    .attr("height", current_img_height)
+                    .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                    .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+            var drect_id = drect[0][0].getAttribute("id")
+            var drect_width = drect[0][0].getAttribute("width")
+            var drect_height = drect[0][0].getAttribute("height")
+            var homethetie_rapport =  current_img_height > current_img_width ?   current_img_height/current_img_width : current_img_width / current_img_height
+
+
+             var rect4 = d3.select("#"+ drect_id)
+                .attr("width", uploaded_img_rect_width)
+                .attr("height",  uploaded_img_rect_height)
+                .style("fill", "#fff")
+                .style("fill", "url(#upload-img-id-zoom-out_" + img_index + ")")
+                .attr('stroke', '#2378ae')
+                .attr('stroke-dasharray', '10,5')
+                .attr('stroke-linecap', 'butt')
+                .attr('stroke-width', '3')
+
+                global_toogle_original_channel = true;
+
+                  })//on click zoom out
+
+//......................................................................................
+//                ZOOM IN
+//.....................................................................................
+
+    var zoom_in = group.append("text")
+                  .attr("x", 290)
+                  .attr("y", 60)
+                  .attr("dy", ".35em")
+                  .text("Z+")
+                  .attr('stroke', 'purple')
+                  .attr('stroke-width', '2')
+                  .attr('class', 'upload-image-menu_' + obj_index)
+                  .attr('id', 'upload-img-text-zoom-in-id_' + obj_index)
+                  .on("mouseover", function(){
+                      d3.select(this)
+                          .attr("dy", ".47em")
+                          .attr("stroke", 'black')
+                          .style("cursor", "pointer");
+
+                  })
+                  .on("mouseout", function(){
+                        d3.select(this)
+                                .attr("dy", ".35em")
+                                .attr("stroke", 'purple')
+
+                  })
+                  .on("click", function(){
+                     d3.event.preventDefault();
+
+                    var all_rects = d3.selectAll("rect")["_groups"]
+
+                    var p = d3.select(this)
+                    var clicked_id = p.attr("id")
+
+                    var img_index = parseInt(clicked_id.split('_')[1])
+
+                    var clicked_img_data = global_uploaded_image_data[img_index];
+
+                    var drect = all_rects.filter(function(d){
+                         var id =  d[0].getAttribute("id")
+                          let index = parseInt(id.split("_")[1])
+                         return index == img_index
+                    })
+
+                    var all_defs = d3.selectAll('defs')["_groups"]
+                    var ddef = all_defs.filter(function(d){
+                                  var id = d[0].firstChild.getAttribute("id")
+                                  let  index = parseInt( id.split("_")[1])
+                                  return index == img_index
+                    })
+
+                var ddef_id = ddef[0][0].firstChild.getAttribute("id")
+                var def4 = d3.select("#" + ddef_id)
+
+                //uploaded_img_rect_width = parseInt(uploaded_img_rect_width/1.1)
+                //uploaded_img_rect_height = parseInt(uploaded_img_rect_height/1.1)
+
+                current_img_width = parseInt(current_img_width * 1.1)
+                current_img_height = parseInt(current_img_height * 1.1)
+
+                //remove old image before redraw
+                if(d3.select("#upload-img-id-zoom-out_" + img_index)){
+                  d3.select("#upload-img-id-zoom-out_" + img_index).remove()
+                }
+
+        var index = parseInt(ddef_id.split("_")[1])
+        var data = global_uploaded_image_data[index]
+
+        var current_image = "/media/" + data['img_file_path']
+              if(global_toogle_red_channel){  current_image = "/" + data['red_channel']}
+              else if(global_toogle_green_channel){  current_image = "/" + data['green_channel']}
+              else if(global_toogle_blue_channel){  current_image = "/" + data['blue_channel']}
+              else if(global_toogle_grey_channel){  current_image = "/" + data['grey_channel']}
+
+
+
+        var zoom_out_def = svg.append('svg:defs')
+                    .append("svg:pattern")
+                    .attr("width", uploaded_img_rect_width)
+                    .attr("height", uploaded_img_rect_height)
+                    .attr("patternUnits", "userSpaceOnUse")
+                    .attr("id", "upload-img-id-zoom-out_" + img_index)
+                    .append("svg:image")
+                    .attr("xlink:href",  current_image)
+                    .attr("width", current_img_width)
+                    .attr("height", current_img_height)
+                    .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                    .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+            var drect_id = drect[0][0].getAttribute("id")
+            var drect_width = drect[0][0].getAttribute("width")
+            var drect_height = drect[0][0].getAttribute("height")
+            var homethetie_rapport =  current_img_height > current_img_width ?   current_img_height/current_img_width : current_img_width / current_img_height
+
+
+             var rect4 = d3.select("#"+ drect_id)
+                .attr("width", uploaded_img_rect_width)
+                .attr("height",  uploaded_img_rect_height)
+                .style("fill", "#fff")
+                .style("fill", "url(#upload-img-id-zoom-out_" + img_index + ")")
+                .attr('stroke', '#2378ae')
+                .attr('stroke-dasharray', '10,5')
+                .attr('stroke-linecap', 'butt')
+                .attr('stroke-width', '3')
+
+                global_toogle_original_channel = true;
+
+              })//on click zoom in
+//......................................................................................
+//               ORIGINAL IMAGE   (back to original image after zoom )
+//.....................................................................................
+var original_image_circle = group.append('circle')
+                  .attr('cx',330)
+                  .attr('cy', 60)
+                  .attr('r',10)
+                  .attr('stroke', 'purple')
+                  .attr('fill', 'purple')
+                  .attr('class', 'upload-image-menu_' + obj_index)
+                  .attr('id', 'upload-img-original-id_' + obj_index)
+                  .on("mouseover", function(){
+                      d3.select(this)
+                          .attr("r", 12)
+                          .attr("stroke", 'yellow')
+                          .style("cursor", "pointer");
+
+                  })
+                  .on("mouseout", function(){
+                        d3.select(this)
+                                .attr("r", 10)
+                                .attr("stroke", 'purple')
+
+
+                  })
+                  .on("click", function(e){
+                     d3.event.preventDefault();
+
+                  if (global_toogle_original_channel){
+
+                   d3.select("#d3-rect-obj-index_"+ img_index).raise();
+                         d3.select("upload-img-def-id_" + img_index).raise();
+                         //d3.select("upload-img-red-id_" + img_index).raise();
+
+                         // move to front
+
+                         //.....................................................
+                      //stylize clicked rect
+                      var all_rects = d3.selectAll("rect")["_groups"]
+
+                      var p = d3.select(this)
+                      var clicked_id = p.attr("id")
+                      var img_index = parseInt(clicked_id.split('_')[1]) //id of text
+
+                      var clicked_img_data = global_uploaded_image_data[img_index];
+
+                      var drect = all_rects.filter(function(d){
+                           var id =  d[0].getAttribute("id")
+                            let index = parseInt(id.split("_")[1])
+                           return index == img_index
+                      })
+
+                      var all_defs = d3.selectAll('defs')["_groups"]
+                      var ddef = all_defs.filter(function(d){
+                            var id = d[0].firstChild.getAttribute("id")
+
+                            let  index = parseInt( id.split("_")[1])
+                           return index == img_index
+                      })
+
+            //initial width and height
+            current_img_width = obj['img_width']
+            current_img_height = obj['img_height']
+
+            //remove zoom image
+            if(d3.select("#upload-img-id-zoom-out_" + img_index)){
+              d3.select("#upload-img-id-zoom-out_" + img_index).remove()
+            }
+
+            //set current image
+            var ddef_id = ddef[0][0].firstChild.getAttribute("id")
+            var index = parseInt(ddef_id.split("_")[1])
+            var data = global_uploaded_image_data[index]
+
+            var current_image = "/media/" + data['img_file_path']
+            var border_transition_color = "purple"
+                  if(global_toogle_red_channel){  current_image = "/" + data['red_channel']; border_transition_color = "red";}
+                  else if(global_toogle_green_channel){  current_image = "/" + data['green_channel'];border_transition_color = "green";}
+                  else if(global_toogle_blue_channel){  current_image = "/" + data['blue_channel'];border_transition_color = "blue";}
+                  else if(global_toogle_grey_channel){  current_image = "/" + data['grey_channel'];border_transition_color = "grey";}
+
+
+            var defs2 =  d3.select("#" + ddef_id)
+                        .attr("id", "upload-img-def-id-00e_" + img_index)
+                        .attr("width", uploaded_img_rect_width)
+                        .attr("height", uploaded_img_rect_height)
+                        .attr("patternUnits", "userSpaceOnUse")
+                        .append("svg:image")
+                        .attr("xlink:href", current_image)
+                        .attr("width", current_img_width)
+                        .attr("height", current_img_height)
+                        .attr("x", x0 + parseInt(uploaded_img_rect_width - current_img_width)/2)
+                        .attr("y", y0 + parseInt(uploaded_img_rect_height - current_img_height)/2);
+
+
+            //var rect2 = d3.select("#d3-rect-obj-index_"+ img_index) ||
+            var drect_id = drect[0][0].getAttribute("id")
+            var rect2 = d3.select("#" + drect_id)
+
+
+                        rect2
+                        .attr("x", x0)
+                        .attr("y",y0)
+                        .attr("width", uploaded_img_rect_width)
+                        .attr("height",  uploaded_img_rect_height)
+                        .style("fill", "#fff")
+                        .style("fill", "url(#upload-img-def-id-00e_" + img_index + ")")
+                        .attr('stroke', '#2378ae')
+                        .attr('stroke-dasharray', '10,5')
+                        .attr('stroke-linecap', 'butt')
+                        .attr('stroke-width', '3')
+
+                        global_toogle_original_channel = false
+
+                        //transition for old border to new
+                        rect2.transition().duration(100).attr('stroke', border_transition_color)
+
+
+                        /*global_toogle_green_channel = false
+                        global_toogle_red_channel = false
+                        global_toogle_blue_channel = false
+                        global_toogle_grey_channel = false */
+
+                      }//if global_toogle_original_channel
+                  })//on click original image
+
+
+//......................................................................................
+//                CLOSE  ICON   (upload image)
+//.....................................................................................
+    var close = group.append("text")
+                .attr("x", 360)
+                .attr("y", 60)
+                .attr("dy", ".35em")
+                .text("X")
+                .attr('stroke', 'purple')
+                .attr('stroke-width', '2')
+                .attr('class', 'upload-image-menu_' + obj_index)
+                .attr('id', 'upload-img-text-close-id_' + obj_index)
+                .on("mouseover", function(){
+                    d3.select(this)
+                        .attr("dy", ".47em")
+                        .attr("stroke", 'black')
+                        .style("cursor", "pointer");
+
+                })
+                .on("mouseout", function(){
+                      d3.select(this)
+                              .attr("dy", ".35em")
+                              .attr("stroke", 'purple')
+
+                })
+                .on("click", function(){
+                   d3.event.preventDefault();
+
+                  var all_rects = d3.selectAll("rect")["_groups"]
+
+                  var p = d3.select(this)
+                  var clicked_id = p.attr("id")
+
+                  var img_index = parseInt(clicked_id.split('_')[1])
+
+                  //var s = d3.selectAll(".all_group_class")["_groups"]
+                  var current_group_all_nodes = d3.selectAll("#mygroup_" + img_index)['_groups'][0][0]
+                  //var nodes_after = current_group_all_nodes.slice(img_index + 1)
+                  console.log("-->>-->>: ", d3.select(current_group_all_nodes)['_groups'][0][0])
+
+                   // <== Get all circle elements
+                   var grouped_elements = d3.select("#mygroup_" + img_index)
+                   //var grouped_nodes = grouped_elements[0].childNodes
+                   var grouped_nodes = grouped_elements['_groups'][0][0].childNodes
+                   d3.selectAll(grouped_nodes).remove()
+
+                   d3.select("#upload-img-red-id_" + img_index).remove()
+                   d3.select("#upload-img-green-id_" + img_index).remove()
+                   d3.select("#upload-img-blue-id_" + img_index).remove()
+                   d3.select("#upload-img-grey-id_" + img_index).remove()
+                   d3.select("#upload-img-original-id_" + img_index).remove()
+                   d3.select("#upload-img-text-zoom-in-id_" + img_index).remove()
+                   d3.select("#upload-img-text-zoom-out-id_" + img_index).remove()
+                   //d3.selectAll(grouped_nodes).remove()
+
+                   global_uploaded_image_data.splice(img_index, 1)
+
+                   var rest_nodes = d3.selectAll(".all_group_class")["_groups"].filter(function(d, i){
+                        return i != img_index
+                   })
+
+                /*  console.log( d3.select("#d3-rect-obj-index_" + img_index).attr("x") )
+                  console.log( d3.select("#upload-img-red-id_" + img_index).attr("cx") ) //red circle
+                  console.log(d3.select("#upload-img-green-id_" + img_index).attr("cx"))
+                  console.log(d3.select("#upload-img-blue-id_" + img_index).attr("cx"))
+                  console.log(d3.select("#upload-img-grey-id_" + img_index).attr("cx"))
+                  console.log(d3.select("#upload-img-original-id_" + img_index).attr("cx"))
+                  console.log(d3.select("#upload-img-text-zoom-in-id_" + img_index).attr("x"))
+                  console.log(d3.select("#upload-img-text-zoom-out-id_" + img_index).attr("x"))
+                  console.log(d3.select("#upload-img-def-id_" + img_index).attr("x")) */
+
+
+    })//on close
+
+  }});
 
     //................. end jquery
 })

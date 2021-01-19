@@ -73,9 +73,9 @@ def simple_upload(request):
 
         #clean directory before ...:
         files = glob.glob('media/images/*')
-        for f in files:
-            os.remove(f)
-        global file_order;
+        #for f in files:
+            #os.remove(f)
+        global file_order
 
         for index, file_obj in enumerate(myfiles):
             current_path = 'images/'+filename + str(file_order)+ str(index)
@@ -98,10 +98,11 @@ def simple_upload(request):
             #print("extension: ", uploaded_file_extension)
             #print(".......", uploaded_image_url)
             normalize_url = uploaded_image_url
+
             #print("------------>>>>>>>", normalize_url)
             global im_instance
             im_instance = PreprocessImage( "media/" + normalize_url )
-
+            img_width, img_height = im_instance.img_width, im_instance.img_height
             image_shape = im_instance.img_numpy.shape
             image_total_dim = image_shape[0] * image_shape[1] * image_shape[2]
 
@@ -116,22 +117,22 @@ def simple_upload(request):
             red_channel = im_instance.img_nump_red_channel.reshape((RESHAPE_ROW, RESHAPE_COL, im_instance.img_numpy.shape[2]))
             # convert numpy array to PIL Image
             im = Image.fromarray(red_channel)
-            red_channel_path = "media/images/red_channel."+uploaded_file_extension
+            red_channel_path = "media/images/red_channel" + str(file_order) + "." + uploaded_file_extension
             im.save(red_channel_path)
 
             green_channel = im_instance.img_nump_green_channel#.reshape((RESHAPE_ROW, RESHAPE_COL, im_instance.img_numpy.shape[2]))
             im = Image.fromarray(green_channel)
-            green_channel_path = "media/images/green_channel."+uploaded_file_extension
+            green_channel_path = "media/images/green_channel" + str(file_order) + "." + uploaded_file_extension
             im.save(green_channel_path)
 
             blue_channel = im_instance.img_nump_blue_channel#.reshape((RESHAPE_ROW, RESHAPE_COL, im_instance.img_numpy.shape[2]))
             im = Image.fromarray(blue_channel)
-            blue_channel_path = "media/images/blue_channel."+uploaded_file_extension
+            blue_channel_path = "media/images/blue_channel" + str(file_order) + "." + uploaded_file_extension
             im.save(blue_channel_path)
 
             greyscale_image = im_instance.img_as_grey_numpy#.reshape((RESHAPE_ROW, RESHAPE_COL, im_instance.img_numpy.shape[2]))
             im = Image.fromarray(greyscale_image)
-            greyscale_image_path = "media/images/greyscale_channel."+uploaded_file_extension
+            greyscale_image_path = "media/images/greyscale_channel" + str(file_order) + "." + uploaded_file_extension
             im.save(greyscale_image_path)
 
             return  HttpResponse(json.dumps([
@@ -141,7 +142,10 @@ def simple_upload(request):
                 json.dumps(paths_list) , #todo: loop over liste
                 json.dumps( im_instance.img_numpy.tolist()),#.reshape((RESHAPE_ROW, RESHAPE_COL, im_instance.img_numpy.shape[2])).tolist() ),
                 greyscale_image_path,
-                json.dumps(im_instance.img_as_grey_numpy.tolist())
+                json.dumps(im_instance.img_as_grey_numpy.tolist()),
+                img_width,
+                img_height,
+                json.dumps( image_shape )
              ]))
         except Exception as ex:
             print("[ERROR from simple_upload]" , ex)
