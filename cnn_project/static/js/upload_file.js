@@ -113,6 +113,7 @@ var defs = svg.append('svg:defs');
 
     var group = svg.append("g")
                 .attr("id", "mygroup_" + obj_index)
+                .attr("class", "all_group_class")
                 .attr("transform", "translate(" + 0 + "," + offsety + ")")
 
     var rect = group.append('rect')
@@ -1165,10 +1166,15 @@ var original_image_circle = group.append('circle')
 
                   var img_index = parseInt(clicked_id.split('_')[1])
 
-                  //var s = d3.selectAll(".all_group_class")["_groups"]
-                  var current_group_all_nodes = d3.selectAll("#mygroup_" + img_index)['_groups'][0][0]
-                  //var nodes_after = current_group_all_nodes.slice(img_index + 1)
-                  console.log("-->>-->>: ", d3.select(current_group_all_nodes)['_groups'][0][0])
+                  var rest_nodes = []
+                  var to_delete = []
+                  for(let k=0;k<d3.selectAll(".all_group_class")["_groups"].length;k++){
+                       let val = d3.selectAll(".all_group_class")["_groups"][k]
+                       for(let n = 0; n<val.length; n++){
+                           if(n > img_index){rest_nodes.push(val[n])}
+                           else to_delete.push(val[n])
+                       }
+                  }
 
                    // <== Get all circle elements
                    var grouped_elements = d3.select("#mygroup_" + img_index)
@@ -1187,9 +1193,71 @@ var original_image_circle = group.append('circle')
 
                    global_uploaded_image_data.splice(img_index, 1)
 
-                   var rest_nodes = d3.selectAll(".all_group_class")["_groups"].filter(function(d, i){
-                        return i != img_index
-                   })
+
+                                 //get x, y of element to delete
+                                 del_x = d3.select(to_delete[0].childNodes[0]).attr("x")
+                                  console.log("del: ", del_x)
+
+                                  transale_vector = -offsety + 40;
+                                  var num = -1
+                                  for(let m=0;m<rest_nodes.length;m++){
+                                      var all_nodes_to_translate = rest_nodes[m].childNodes
+
+
+                                      for(let z=0; z<all_nodes_to_translate.length;z++){
+
+                                         if (z == 0){
+                                       num = d3.select(all_nodes_to_translate[z]).attr('id').split('_')[1]
+
+                                     }
+                                          //rect
+                                         d3.select("#d3-rect-obj-index_" + num)
+                                         .attr("id", "d3-rect-obj-index-trans_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+                                         //text close
+                                           d3.select("#upload-img-text-close-id_" + num)
+                                           .attr("id", "#upload-img-text-close-trans-id_" + num)
+                                           .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //original
+                                         d3.select("#upload-img-original-id_" + num)
+                                         .attr("id", "#upload-img-original-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //zoom in
+                                         d3.select("#upload-img-text-zoom-in-id_" + num)
+                                         .attr("id", "#upload-img-text-zoom-in-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //zoom out
+                                         d3.select("#upload-img-text-zoom-out-id_" + num)
+                                         .attr("id", "#upload-img-text-zoom-out-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //grey
+                                         d3.select("#upload-img-grey-id_" + num)
+                                         .attr("id", "#upload-img-grey-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //blue
+                                         d3.select("#upload-img-blue-id_" + num)
+                                         .attr("id", "#upload-img-blue-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //green
+                                         d3.select("#upload-img-green-id_" + num)
+                                         .attr("id", "#upload-img-green-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                         //red
+                                         d3.select("#upload-img-red-id_" + num)
+                                         .attr("id", "#upload-img-red-trans-id_" + num)
+                                         .attr("transform", "translate(" + 0 + "," + transale_vector + ")");
+
+                                      }
+                                  }
+
+
 
                 /*  console.log( d3.select("#d3-rect-obj-index_" + img_index).attr("x") )
                   console.log( d3.select("#upload-img-red-id_" + img_index).attr("cx") ) //red circle
