@@ -1,4 +1,8 @@
 $(
+
+  //UPLOAD FILE
+  //IMAGE ICON MANAGEMENT
+
   function(){
     //.........................................................................
     //                  UPLOAD FILE
@@ -15,7 +19,7 @@ $(
     uploaded_img_rect_width = 400
     uploaded_img_rect_height = 400
     icon_inter_space = 35
-    pixel_width = 30
+
 
 
     x0 = 50
@@ -217,9 +221,9 @@ var texture = svg.append('defs')
 
                       xtop_rect = x0 + parseInt((rect_width - global_uploaded_image_data[img_index]['current_img_width'])/2)
 
-                      ytop_rect  = y0 + pixel_width + img_index * uploaded_img_rect_height + parseInt((rect_height - global_uploaded_image_data[img_index]['current_img_height'])/2)
+                      ytop_rect  = y0 + global_tile_width + img_index * uploaded_img_rect_height + parseInt((rect_height - global_uploaded_image_data[img_index]['current_img_height'])/2)
                       //vertical lines
-                      for(let x=xtop_rect; x<xtop_rect + global_uploaded_image_data[img_index]['current_img_width']; x=x+pixel_width){
+                      for(let x=xtop_rect; x<xtop_rect + global_uploaded_image_data[img_index]['current_img_width']; x=x+global_tile_width){
                         svg.append("line")
                         .attr("x1", x )
                         .attr("y1", ytop_rect)
@@ -234,7 +238,7 @@ var texture = svg.append('defs')
                       }
 
                       //horizontal lines
-                      for(let y=ytop_rect; y<ytop_rect + global_uploaded_image_data[img_index]['current_img_height']; y=y+pixel_width){
+                      for(let y=ytop_rect; y<ytop_rect + global_uploaded_image_data[img_index]['current_img_height']; y=y+global_tile_width){
                         svg.append("line")
                         .attr("x1", xtop_rect )
                         .attr("y1", y)

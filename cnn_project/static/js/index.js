@@ -375,24 +375,7 @@ $("#cnn-grey-scale").click(function(e){
 //                                  BUILD KERNEL
 //--------------------------------------------------------------------------------------------
 
-$("#build_kernel").click(function( e ){
 
-    e.preventDefault()
-    //var csrftoken = $("[name=csrfmiddlewaretoken]").val();
-    var uploded_image_url =   $(".upload-image-container img").attr('src')
-    console.log(uploded_image_url)
-    if ( ! uploded_image_url) {console.error("Please, upload image before")}
-
-    //$('.image-channels .pixel-array-displayed').css({"background-color": "yellow", "font-size": "30%"});
-    // get x coord
-    if(  $("#myForm").css("display") == 'block'  ){
-         $("#myForm").css("display", "none")
-    } else {  $("#myForm").css("display", "block")  }
-
-    return false;
-
-
-})//end click
 
 //---------------------------------------------------------------------------------------
 //                                CONVOLUTION
@@ -1116,39 +1099,8 @@ $("#predict-cnn").click(function(e){
 //---------------------------------------------------------------------------------------
 //                          POPUP KERNEL
 //---------------------------------------------------------------------------------------
-$("form").on('click', function(e){
-      e.preventDefault()
-      if(e.target.name == 'submit-filter')
-      {
-            var inputVal = $("input[type='text']").val()
-            var a = inputVal.split(",").map(Number);
 
-            global_user_input_kernel = [
-              [a[0], a[1], a[2]],
-              [a[3], a[4], a[5]],
-              [a[6], a[7], a[8]]
-            ]
 
-            if(global_kernel_shape_show){
-                draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,kernel_array)
-                global_kernel_shape_show = false
-             } else {
-               draw_kernel(  global_image_xtop_left ,   global_image_ytop_left ,global_user_input_kernel)
-                  global_kernel_shape.remove()
-                  global_kernel_shape_show = true;
-              }
-
-      }
-      if(  e.target.name == 'reset-filter') {
-         $(this).remove()
-         //$(this).hide()
-      }
-})
-
-$(".form-container input[name='reset-filter']").on('click', function(e){
-      e.preventDefault()
-      alert("second child")
-})
 
 //----------------------------------------------------------------------------------------
 //                                            FUNCTIONS - UTILS
@@ -1163,56 +1115,8 @@ function draw_pixel(x_top_left, y_top_left){
       .attr("fill", "rgba(128, 128, 128, 0.4)")
 }
 
-function draw_kernel(x_top_left, y_top_left, kernel_data){
+function draw_kernel(x_top_left, y_top_left, kernel_data){ }
 
-  var data_obj = [
-    [{x:x_top_left, y: y_top_left, t:kernel_data[0][0]}, {x:x_top_left + global_tile_width, y: y_top_left, t:kernel_data[0][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left, t:kernel_data[0][2]}],
-
-    [{x:x_top_left, y: y_top_left + global_tile_width, t:kernel_data[1][0]}, {x:x_top_left + global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[1][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + global_tile_width, t:kernel_data[1][2]}],
-
-    [{x:x_top_left, y: y_top_left + 2*global_tile_width, t:kernel_data[2][0]}, {x:x_top_left + global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[2][1]}, {x:x_top_left + 2*global_tile_width, y: y_top_left + 2*global_tile_width, t:kernel_data[2][2]}]
-  ]
-
-  var num_row = parseInt(global_image_file_height/global_tile_width)
-  var num_col = parseInt(global_image_file_width/global_tile_width)
-
-  global_kernel_shape = d3.select('.upload-image-container')
-          .append("svg")
-          .attr("width", global_tile_width * num_col)
-          .attr("height", global_tile_width * num_row)
-          .selectAll("g")
-          .data(data_obj)
-          .enter()
-          .append("g")
-          .attr("class", "kernel")
-
-  var rects = global_kernel_shape.selectAll('rect')
-  .data( function(d,i,j) { return d; } ) //lines
-  .enter()
-  .append("rect")
-  .attr("x", function(d,i, j){ return d.x;})
-  .attr("y", function(d,i, j){return d.y;})
-  .attr("width", global_tile_width)
-  .attr("height", global_tile_width)
-  .attr("fill", "rgba(128, 128, 128, 0.4)")
-  .attr("class", "kernel_rects")
-  .style("stroke", "rgb(6,120,155)")
-  .style("stroke-width", 4)
-
-  var texts = global_kernel_shape.selectAll('text')
-   .data( function(d,i,j) { return d; } )
-   .enter()
-   .append("text")
-   .attr('x', function(d, i, j) { return d.x + 0.45*global_tile_width; })
-   .attr('y', function(d, i, j) { return d.y + 0.55*global_tile_width; })
-   .attr('fill', function(d, i, j ) { return "black"; })
-   .attr("class", "kernel_texts")
-   .text(function(d,i,j) {
-      if (d.t % 1 === 0){ return d.t}
-      return (d.t).toFixed(2);
-  })
-
-}
 
 //------------------------------------------------------------------------------------------//
 //                                            END END

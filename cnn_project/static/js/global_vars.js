@@ -1,5 +1,7 @@
 $(
   function(){
+
+    //TO DELETE : global_image_file_width, global_image_file_height
     window.global_toggle_upload_div = false
 
     window.global_uploaded_image_data = []
