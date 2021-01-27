@@ -10,20 +10,19 @@ $(
     window.global_toogle_original_channel = false
     window.global_shifht_nodes = false
     window.global_current_index = 0
-
+    window.svg = null;
 
     uploaded_img_rect_width = 400
     uploaded_img_rect_height = 400
     icon_inter_space = 35
+    pixel_width = 30
 
 
     x0 = 50
     y0 = 50
 
-    icon_x0 = 150
+    icon_x0 = 120
     icon_y0 = 60
-
-
 
     d3.selection.prototype.moveToBack = function() {
         return this.each(function() {
@@ -35,9 +34,10 @@ $(
     };
 
 
-    var svg = d3.select("body").append("svg")
+    svg = d3.select("body").append("svg")
               .attr("width", 1000)
               .attr("height", 4000)
+              .attr("class", "svg-general-class")
 
 
     $(".upload-image-container").css('z-index', 300)
@@ -98,6 +98,7 @@ $(
              "img_shape": JSON.parse(rdata[9]),
              "current_img_width" : rdata[7],
              "current_img_height" : rdata[8],
+             "draw_grid": true
          }
 
           global_uploaded_image_data.push(obj);
@@ -160,10 +161,107 @@ $(
           .attr('stroke-width', '3')
 
 //......................................................................................
+//                        pixelize cercle button
+//.....................................................................................
+var pixel_circle = group1.append('circle')
+
+var texture = svg.append('defs')
+              .append('pattern')
+              .attr('id', 'texture')
+              .attr('patternUnits', 'userSpaceOnUse')
+              .attr('width', 8)
+              .attr('height', 8)
+              .append('path')
+              .attr('d', 'M0 0L8 8ZM8 0L0 8Z')
+              .attr('stroke', '#C48AB2')
+              .attr('stroke-width', 1);
+
+                pixel_circle
+                .attr('cx', icon_x0)
+                .attr('cy', icon_y0)
+                .attr('r',10)
+                .attr('stroke', 'red')
+                .attr('fill', 'url(#texture)' )
+                .attr('class', 'upload-image-menu_' + obj_index)
+                .attr('id', 'upload-img-red-id_' + obj_index)
+                .attr('stroke', 'orange')
+                .attr('stroke-width', '3')
+                .on("mouseover", function(){
+                    d3.select(this)
+                        .attr("r", 12)
+                        .attr("stroke", 'purple')
+                        .style("cursor", "pointer");
+                })
+                .on("mouseout", function(){
+                      d3.select(this).attr("r", 10).attr("stroke", 'red')
+                })
+                .on("click", function(e){
+                   d3.event.preventDefault();
+                   var p = d3.select(this)
+                   var clicked_id = p.attr("id")
+                   var img_index = parseInt(clicked_id.split('_')[1])
+
+                   var clicked_img_data = global_uploaded_image_data[img_index];
+
+                    if(!global_uploaded_image_data[img_index]['draw_grid']){
+                      rect = d3.select("#d3-rect-obj-index_"+ img_index)["_groups"][0][0]
+                      rect_id = rect.getAttribute("id")
+                      rect_width = rect.getAttribute("width")
+                      rect_height = rect.getAttribute("height")
+
+                      image = d3.select("#upload-img-def-id_"+ img_index)["_groups"][0][0]
+                      image_width = image.getAttribute("width") //302
+                      image_height = image.getAttribute("height") //300
+                      image_x = image.getAttribute("x") //300
+                      image_y = image.getAttribute("y") //300
+
+                      xtop_rect = x0 + parseInt((rect_width - global_uploaded_image_data[img_index]['current_img_width'])/2)
+
+                      ytop_rect  = y0 + pixel_width + img_index * uploaded_img_rect_height + parseInt((rect_height - global_uploaded_image_data[img_index]['current_img_height'])/2)
+                      //vertical lines
+                      for(let x=xtop_rect; x<xtop_rect + global_uploaded_image_data[img_index]['current_img_width']; x=x+pixel_width){
+                        svg.append("line")
+                        .attr("x1", x )
+                        .attr("y1", ytop_rect)
+                        .attr("x2", x)
+                        .attr("y2", ytop_rect + global_uploaded_image_data[img_index]['current_img_height'])
+                        .style('stroke-width', '3')
+                        .attr('fill', "red")
+                        .attr('stroke', "black")
+                        .attr("class", "pixel-horizontal-lines")
+                        .attr("id", "pixel-vertical-lines_" + img_index)
+                        .attr("class", "current-rect-pixel_"+img_index)
+                      }
+
+                      //horizontal lines
+                      for(let y=ytop_rect; y<ytop_rect + global_uploaded_image_data[img_index]['current_img_height']; y=y+pixel_width){
+                        svg.append("line")
+                        .attr("x1", xtop_rect )
+                        .attr("y1", y)
+                        .attr("x2", xtop_rect + global_uploaded_image_data[img_index]['current_img_width'])
+                        .attr("y2", y)
+                        .style('stroke-width', '3')
+                        .attr('fill', "red")
+                        .attr('stroke', "black")
+                        .attr("class", "pixel-horizontal-lines")
+                        .attr("id", "pixel-horizontal-lines_" + img_index)
+                        .attr("class", "current-rect-pixel_"+img_index)
+                      }
+
+
+                      global_uploaded_image_data[img_index]['draw_grid'] = true
+                    }//if global_draw_pixel = true
+                    else {
+                      d3.selectAll(".current-rect-pixel_"+img_index).remove()
+                      global_uploaded_image_data[img_index]['draw_grid'] = false
+                    }//if global_draw_pixel = false
+                })
+
+//......................................................................................
 //                        red channel button
 //.....................................................................................
               var red_circle = group1.append('circle')
-              .attr('cx', icon_x0)
+              .attr('cx', icon_x0 +  icon_inter_space)
               .attr('cy', icon_y0)
               .attr('r',10)
               .attr('stroke', 'red')
@@ -296,7 +394,7 @@ $(
 //                        green channel button
 //.....................................................................................
                     var green_circle = group1.append('circle')
-                    .attr('cx', icon_x0 +  icon_inter_space)
+                    .attr('cx', icon_x0 +  2*icon_inter_space)
                     .attr('cy', icon_y0)
                     .attr('r',10)
                     .attr('stroke', 'green')
@@ -455,7 +553,7 @@ $(
 //.....................................................................................
 
 var blue_circle = group1.append('circle')
-                      .attr('cx', icon_x0 + 2 * icon_inter_space)
+                      .attr('cx', icon_x0 + 3 * icon_inter_space)
                       .attr('cy', icon_y0)
                       .attr('r',10)
                       .attr('stroke', 'blue')
@@ -619,7 +717,7 @@ var blue_circle = group1.append('circle')
   //.....................................................................................
 
     var grey_circle = group1.append('circle')
-                      .attr('cx', icon_x0 + 3 * icon_inter_space)
+                      .attr('cx', icon_x0 + 4 * icon_inter_space)
                       .attr('cy', icon_y0)
                       .attr('r',10)
                       .attr('stroke', 'grey')
@@ -777,7 +875,7 @@ var blue_circle = group1.append('circle')
 //.....................................................................................
 
     var zoom_out = group1.append("text")
-                  .attr('x', icon_x0 + 4 * icon_inter_space)
+                  .attr('x', icon_x0 + 5 * icon_inter_space)
                   .attr('y', icon_y0)
                   .attr("dy", ".35em")
                   .text("Z-")
@@ -896,7 +994,7 @@ var blue_circle = group1.append('circle')
 //.....................................................................................
 
     var zoom_in = group1.append("text")
-                  .attr('x', icon_x0 + 5 * icon_inter_space)
+                  .attr('x', icon_x0 + 6 * icon_inter_space)
                   .attr('y', icon_y0)
                   .attr("dy", ".35em")
                   .text("Z+")
@@ -948,8 +1046,8 @@ var blue_circle = group1.append('circle')
                 //uploaded_img_rect_width = parseInt(uploaded_img_rect_width/1.1)
                 //uploaded_img_rect_height = parseInt(uploaded_img_rect_height/1.1)
 
-                current_img_width = parseInt(current_img_width * 1.1)
-                current_img_height = parseInt(current_img_height * 1.1)
+                current_img_width = parseInt(global_uploaded_image_data[img_index]['current_img_width'] * 1.1)
+                current_img_height = parseInt(global_uploaded_image_data[img_index]['current_img_height'] * 1.1)
 
                 //remove old image before redraw
                 if(d3.select("#upload-img-id-zoom-out_" + img_index)){
@@ -1004,7 +1102,7 @@ var blue_circle = group1.append('circle')
 //               ORIGINAL IMAGE   (back to original image after zoom )
 //.....................................................................................
 var original_image_circle = group1.append('circle')
-                  .attr('cx', icon_x0 + 6* icon_inter_space)
+                  .attr('cx', icon_x0 + 7 * icon_inter_space)
                   .attr('cy', icon_y0)
                   .attr('r',10)
                   .attr('stroke', 'purple')
@@ -1127,7 +1225,7 @@ var original_image_circle = group1.append('circle')
 //                CLOSE  ICON   (upload image)
 //.....................................................................................
     var close = group1.append("text")
-                .attr("x",  icon_x0 + 7 * icon_inter_space)
+                .attr("x",  icon_x0 + 8 * icon_inter_space)
                 .attr('y', icon_y0)
                 .attr("dy", ".35em")
                 .text("X")
