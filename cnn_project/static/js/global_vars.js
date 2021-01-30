@@ -45,5 +45,12 @@ $(
     window.global_max_pooling_array = null;
 
     window.global_max_poll_flatten_array = []
+
+    //SVG
+    window.svg_group1 = null
+    window.svg_group2 = null
+    window.svg_group3 = null
+
+    global_offsety = null
   }
 )

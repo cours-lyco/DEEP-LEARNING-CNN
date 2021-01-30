@@ -33,15 +33,6 @@
     background-color: black;
 }
 
-.upload-image-container {
-  width:40%;
-  height:80%;
-  position:absolute;
-  left:5%;
-  top:18%;
-  padding:0;
-}
-
 
 .board-container , .console-container{
     width:100%;
@@ -88,7 +79,10 @@
   margin: 0 auto;
 } */
 
-svg { position:absolute; top:0;}
+svg {
+  position:absolute; top:0;
+  font-family: Verdana,"Times New Roman", Times, serif;
+}
 
 {box-sizing: border-box;}
 

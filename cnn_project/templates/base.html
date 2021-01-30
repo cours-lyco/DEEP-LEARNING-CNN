@@ -14,16 +14,15 @@
     <nav>
 		<ul id="main-nav">
 			<li class="home"  ><a href="#" id="cnn-load-Image" >Upload file</a></li>
-			<li class="portfolio" ><a href="#" id="cnn-grey-scale" >GreyScale</a></li>
-			<li class="services" ><a  href="#" id="cnn-image-grid" >Pixel</a></li>
-      <li class="contact"><a href="#" id="build_padding" >Add Padding</a></li>
-			<li class="contact"><a  href="#" id="build_kernel" >Build-kernel</a></li>
-			<li class="contact"><a href="#" id="convolution" >Convolution</a></li>
-			<li class="contact"><a  href="#"id="max-pooling" >Max Pooling</a></li>
-			<li class="contact"><a href="#"id="fully-conn" >Full Conn</a></li>
-			<li class="contact"><a href="#"id="train-conn" >Training NN</a></li>
-			<li class="contact"><a href="#"id="predict-conn" >Prediction</a></li>
-      <li>
+			<!-- <li class="portfolio" ><a href="#" id="cnn-grey-scale" >GreyScale</a></li> -->
+			<!-- <li class="services" ><a  href="#" id="cnn-image-grid" >Pixel</a></li> -->
+			<li class="list-container"><a  href="#" id="build_kernel" >Build-kernel</a></li>
+			<li class="list-container"><a href="#" id="build_padding" >Add Padding</a></li>
+			<li class="list-container"><a href="#" id="convolution" >Convolution</a></li>
+			<li class="list-container"><a  href="#"id="max-pooling" >Max Pooling</a></li>
+			<li class="list-container"><a href="#"id="fully-conn" >Full Conn</a></li>
+			<li class="list-container"><a href="#"id="train-conn" >Training NN</a></li>
+			<li class="list-container"><a href="#"id="predict-conn" >Prediction</a></li>
       <!--   <select name="pets" id="nympy-functions">
           <option value="">-- Please numpy funtion --</option>
           {% for function in numpy_functions %}
@@ -31,19 +30,23 @@
           {% endfor %}
         </select>
       </li> -->
-      <li id="button-zoom" style="position:absolute; width:5%; right:12;"></li>
+      <!-- <li id="button-zoom" style="position:absolute; width:5%; right:12;"></li> -->
 		</ul>
-    <p class="reload-page"><button onClick="window.location.reload()"><span class=reload>&#x21bb;</span></button></p>
+    <!-- <p class="reload-page"><button onClick="window.location.reload()"><span class=reload>&#x21bb;</span></button></p> -->
     </nav>
+			<hr>
+
 		<div class="clear"></div>
 		<div id="featured">
 		</div>
 	</div>
   <!--    ...............            HEADER END     ..............                -->
+
   {% block content%}
   {% endblock %}
+
   <!--    ...............            FOOTER START     ..............              -->
-  <div class="">
+  <div class="footer-container">
     footer goes here
   </div>
   <!--    ...............            FOOTER END     ..............              -->
@@ -66,9 +69,12 @@
   <script type="text/javascript"  src="{% static 'js/global_vars.js' %}"></script>
   <script type="text/javascript"  src="{% static 'js/d3-3d.js' %}"></script>
   <script type="text/javascript"  src="{% static 'js/header.js' %}"></script>
+	<!-- <script type="module"  src="{% static 'js/pixel_array.js' %}"></script> -->
   <script type="text/javascript"  src="{% static 'js/upload_file.js' %}"></script>
   <script type="text/javascript"  src="{% static 'js/pixel.js' %}"></script>
   <script type="text/javascript"  src="{% static 'js/kernel.js' %}"></script>
+  <script type="text/javascript"  src="{% static 'js/convolution.js' %}"></script>
+
 
 
   <script type="text/javascript" src="{% static 'js/index.js' %}" ></script>

@@ -1,7 +1,7 @@
 $(
   function(){
-    x0 = 50 //to globalize
-    y0 = 50 //to globalize
+    //x0 = 50 //to globalize
+    //y0 = 50 //to globalize
 
     //KERNEL
     var kernel_array = [
@@ -106,9 +106,21 @@ $(
                             image_x = image.getAttribute("x") //300
                             image_y = image.getAttribute("y") //300
 
-                            xtop_rect = x0 + parseInt((rect_width - global_uploaded_image_data[j]['current_img_width'])/2)
+                            ratio_wgreat = 1.0
+                            ratio_hgreat = 1.0
 
-                            ytop_rect  = y0 + global_tile_width + j * uploaded_img_rect_height + parseInt((rect_height - global_uploaded_image_data[j]['current_img_height'])/2)
+                            /*if(global_uploaded_image_data[j]['current_img_width'] >= global_uploaded_image_data[j]['current_img_height']){
+                              ratio_wgreat = global_uploaded_image_data[j]['current_img_width']/global_uploaded_image_data[j]['current_img_height']
+                            }else {
+                                ratio_hgreat = global_uploaded_image_data[j]['current_img_height']/global_uploaded_image_data[j]['current_img_width']
+                            }*/
+
+                            xtop_rect = x0 + parseInt((ratio_wgreat*rect_width - global_uploaded_image_data[j]['current_img_width'])/2)
+
+                            shift = 1.0
+
+                          if(rect_width > rect_height){ shift = 50 }
+                            ytop_rect  = y0 + shift+ j * uploaded_img_rect_height + parseInt((ratio_hgreat * rect_height - global_uploaded_image_data[j]['current_img_height'] )/2)
 
 
                             draw_kernel(  xtop_rect ,   ytop_rect , global_uploaded_image_data[j]['current_img_width'], global_uploaded_image_data[j]['current_img_height'], global_user_input_kernel )
@@ -151,30 +163,6 @@ $(
 
       var num_row = parseInt(img_height/global_tile_width)
       var num_col = parseInt(img_width/global_tile_width)
-console.log("num_row: ", num_row)
-console.log("num_col: ", num_col)
-      /*global_kernel_shape = d3.select('.upload-image-container')
-              .append("svg")
-              .attr("width", global_tile_width * num_col)
-              .attr("height", global_tile_width * num_row)
-              .selectAll("g")
-              .data(data_obj)
-              .enter()
-              .append("g")
-              .attr("class", "kernel")
-
-      var rects = global_kernel_shape.selectAll('rect')
-      .data( function(d,i,j) { return d; } ) //lines
-      .enter()
-      .append("rect")
-      .attr("x", function(d,i, j){ return d.x;})
-      .attr("y", function(d,i, j){return d.y;})
-      .attr("width", global_tile_width)
-      .attr("height", global_tile_width)
-      .attr("fill", "rgba(128, 128, 128, 0.4)")
-      .attr("class", "kernel_rects")
-      .style("stroke", "rgb(6,120,155)")
-      .style("stroke-width", 4)*/
 
       for(let r=0; r<data_obj.length; r++){
         for(let s=0; s<data_obj[r].length; s++){
@@ -202,53 +190,11 @@ console.log("num_col: ", num_col)
                return (data_obj[r][s]["t"]).toFixed(2);
            })
         }
-      }
-      //vertical lines
-    /*  for(let x=xtop_rect; x<xtop_rect + global_uploaded_image_data[img_index]['current_img_width']; x=x+global_tile_width){
-        svg.append("line")
-        .attr("x1", x )
-        .attr("y1", ytop_rect)
-        .attr("x2", x)
-        .attr("y2", ytop_rect + global_uploaded_image_data[img_index]['current_img_height'])
-        .style('stroke-width', '3')
-        .attr('fill', "red")
-        .attr('stroke', "black")
-        .attr("class", "pixel-horizontal-lines")
-        .attr("id", "pixel-vertical-lines_" + img_index)
-        .attr("class", "current-rect-pixel_"+img_index)
-      }
+      }//for loop r=0
 
-      //horizontal lines
-      for(let y=ytop_rect; y<ytop_rect + global_uploaded_image_data[img_index]['current_img_height']; y=y+global_tile_width){
-        svg.append("line")
-        .attr("x1", xtop_rect )
-        .attr("y1", y)
-        .attr("x2", xtop_rect + global_uploaded_image_data[img_index]['current_img_width'])
-        .attr("y2", y)
-        .style('stroke-width', '3')
-        .attr('fill', "red")
-        .attr('stroke', "black")
-        .attr("class", "pixel-horizontal-lines")
-        .attr("id", "pixel-horizontal-lines_" + img_index)
-        .attr("class", "current-rect-pixel_"+img_index)
-      } */
-
-
-
-      /*var texts = global_kernel_shape.selectAll('text')
-       .data( function(d,i,j) { return d; } )
-       .enter()
-       .append("text")
-       .attr('x', function(d, i, j) { return d.x + 0.45*global_tile_width; })
-       .attr('y', function(d, i, j) { return d.y + 0.55*global_tile_width; })
-       .attr('fill', function(d, i, j ) { return "black"; })
-       .attr("class", "kernel_texts")
-       .text(function(d,i,j) {
-          if (d.t % 1 === 0){ return d.t}
-          return (d.t).toFixed(2);
-      }) */
 
     } //DRAW KERNEL
+
 
     //END JQUERY
 })

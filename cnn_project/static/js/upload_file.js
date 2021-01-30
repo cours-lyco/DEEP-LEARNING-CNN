@@ -1,9 +1,19 @@
+
 $(
 
   //UPLOAD FILE
   //IMAGE ICON MANAGEMENT
 
   function(){
+
+    jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+      });
+    }
     //.........................................................................
     //                  UPLOAD FILE
     //.........................................................................
@@ -15,17 +25,14 @@ $(
     window.global_shifht_nodes = false
     window.global_current_index = 0
     window.svg = null;
+    window.x0 = 10
+    window.y0 = 50
 
     uploaded_img_rect_width = 400
     uploaded_img_rect_height = 400
     icon_inter_space = 35
 
-
-
-    x0 = 50
-    y0 = 50
-
-    icon_x0 = 120
+    icon_x0 = 70
     icon_y0 = 60
 
     d3.selection.prototype.moveToBack = function() {
@@ -38,13 +45,16 @@ $(
     };
 
 
-    svg = d3.select("body").append("svg")
-              .attr("width", 1000)
+    svg = d3.select("#uploaded-images-group").append("svg")
+              .attr("width", 420)
               .attr("height", 4000)
               .attr("class", "svg-general-class")
+              //.style("border", "1px solid white")
 
 
-    $(".upload-image-container").css('z-index', 300)
+    //$(".upload-image-container").css('z-index', "300")
+    //$("#fileuploader").css({"position": "absolute", "top": "0", "z-index":"0"});
+
     $("#fileuploader").uploadFile({
 
         url: "/upload-cnn-files", // Server URL which handles File uploads
@@ -111,19 +121,19 @@ $(
 
           var defs = svg.append('svg:defs');
           obj_index = global_uploaded_image_data.indexOf(obj); //
-          var offsety = obj_index * uploaded_img_rect_height + 30
+          global_offsety = obj_index * uploaded_img_rect_height + 30
 
-          var group1 = svg.append("g")
-                      .attr("class", "group1")
-                      .attr("transform", "translate(" + 0 + "," + offsety + ")")
+          svg_group1 = svg.append("g")
+                      .attr("class", "svg_group1")
+                      .attr("transform", "translate(" + 0 + "," + global_offsety + ")")
 
-          var group2 = svg.append("g")
-                      .attr("class", "group2")
-                      .attr("transform", "translate(" + 0 + "," + (-offsety + 30) + ")")
+          svg_group2 = svg.append("g")
+                      .attr("class", "svg_group2")
+                      .attr("transform", "translate(" + 0 + "," + (-global_offsety + 30) + ")")
 
-          var group3 = svg.append("g")
-                      .attr("class", "group3")
-                    //  .attr("transform", "translate(" + 0 + "," + offsety + ")")
+          svg_group3 = svg.append("g")
+                      .attr("class", "svg_group3")
+                    //  .attr("transform", "translate(" + 0 + "," + global_offsety + ")")
 
 
 
@@ -145,12 +155,12 @@ $(
           .attr("xlink:href", "/media/" + obj['img_file_path'])
           .attr("width", obj['current_img_width'])
           .attr("height", obj['current_img_height'])
-          .attr("x", 50 + parseInt(uploaded_img_rect_width - obj['current_img_width'])/2)
-          .attr("y", 50 + parseInt(uploaded_img_rect_height - obj['current_img_height'])/2);
+          .attr("x", x0 + parseInt(uploaded_img_rect_width - obj['current_img_width'])/2)
+          .attr("y", y0 + parseInt(uploaded_img_rect_height - obj['current_img_height'])/2);
 
 
 
-          var rect = group1.append('rect')
+          var rect = svg_group1.append('rect')
           .attr("x", x0)
           .attr("y", y0)
           .attr("width", uploaded_img_rect_width)
@@ -167,7 +177,7 @@ $(
 //......................................................................................
 //                        pixelize cercle button
 //.....................................................................................
-var pixel_circle = group1.append('circle')
+var pixel_circle = svg_group1.append('circle')
 
 var texture = svg.append('defs')
               .append('pattern')
@@ -205,6 +215,8 @@ var texture = svg.append('defs')
                    var clicked_id = p.attr("id")
                    var img_index = parseInt(clicked_id.split('_')[1])
 
+
+
                    var clicked_img_data = global_uploaded_image_data[img_index];
 
                     if(!global_uploaded_image_data[img_index]['draw_grid']){
@@ -223,40 +235,52 @@ var texture = svg.append('defs')
 
                       ytop_rect  = y0 + global_tile_width + img_index * uploaded_img_rect_height + parseInt((rect_height - global_uploaded_image_data[img_index]['current_img_height'])/2)
                       //vertical lines
-                      for(let x=xtop_rect; x<xtop_rect + global_uploaded_image_data[img_index]['current_img_width']; x=x+global_tile_width){
-                        svg.append("line")
-                        .attr("x1", x )
-                        .attr("y1", ytop_rect)
-                        .attr("x2", x)
-                        .attr("y2", ytop_rect + global_uploaded_image_data[img_index]['current_img_height'])
-                        .style('stroke-width', '3')
-                        .attr('fill', "red")
-                        .attr('stroke', "black")
-                        .attr("class", "pixel-horizontal-lines")
-                        .attr("id", "pixel-vertical-lines_" + img_index)
-                        .attr("class", "current-rect-pixel_"+img_index)
-                      }
 
-                      //horizontal lines
-                      for(let y=ytop_rect; y<ytop_rect + global_uploaded_image_data[img_index]['current_img_height']; y=y+global_tile_width){
-                        svg.append("line")
-                        .attr("x1", xtop_rect )
-                        .attr("y1", y)
-                        .attr("x2", xtop_rect + global_uploaded_image_data[img_index]['current_img_width'])
-                        .attr("y2", y)
-                        .style('stroke-width', '3')
-                        .attr('fill', "red")
-                        .attr('stroke', "black")
-                        .attr("class", "pixel-horizontal-lines")
-                        .attr("id", "pixel-horizontal-lines_" + img_index)
-                        .attr("class", "current-rect-pixel_"+img_index)
+                      var rows = parseInt(global_uploaded_image_data[img_index]['current_img_width']/global_tile_width)
+                      var cols = parseInt(global_uploaded_image_data[img_index]['current_img_height']/global_tile_width)
+
+                      var pixel_data = []
+                      console.log("rows: "+ rows + " cols: "+ cols)
+
+
+                      for(let i=0; i<rows;i++){
+                        d = []
+                        for(let j=0;j<cols; j++){
+                           d.push({
+                              x : xtop_rect + i*global_tile_width,
+                              y : ytop_rect + j*global_tile_width,
+                              width:global_tile_width,
+                              height:global_tile_width,
+                           })
+                        }
+                        pixel_data.push(d)
                       }
 
 
+                      var display_rgb = svg_group3.append("g")
+                                        .attr("class", "grid_pixel_" + img_index)
+
+                      var row = display_rgb.selectAll(".row")
+                          .data(pixel_data)
+                          .enter().append("g")
+                          .attr("class", "row")
+
+                      var columns = row.selectAll(".square")
+                      .data(function(d) { return d; })
+                      .enter().append("rect")
+                      .attr("class","square")
+                      .attr("x", function(d) { return d.x; })
+                      .attr("y", function(d) { return d.y; })
+                      .attr("width", function(d) { return d.width; })
+                      .attr("height", function(d) { return d.height; })
+                      .style("stroke", "#222")
+                      .style("fill", "transparent");
+
+                       $(".grid_pixel_" + img_index).css("z-index", -1)
                       global_uploaded_image_data[img_index]['draw_grid'] = true
                     }//if global_draw_pixel = true
                     else {
-                      d3.selectAll(".current-rect-pixel_"+img_index).remove()
+                      d3.selectAll(".grid_pixel_"+img_index).remove()
                       global_uploaded_image_data[img_index]['draw_grid'] = false
                     }//if global_draw_pixel = false
                 })
@@ -264,7 +288,7 @@ var texture = svg.append('defs')
 //......................................................................................
 //                        red channel button
 //.....................................................................................
-              var red_circle = group1.append('circle')
+              var red_circle = svg_group1.append('circle')
               .attr('cx', icon_x0 +  icon_inter_space)
               .attr('cy', icon_y0)
               .attr('r',10)
@@ -329,6 +353,13 @@ var texture = svg.append('defs')
                     .attr('stroke-dasharray', '10,5')
                     .attr('stroke-linecap', 'butt')
                     .attr('stroke-width', '3')
+
+                    $("#uploaded-images-console").css("z-index", 500)
+
+                    $.getScript("./static/js/pixel_array.js", function() {
+                      draw_rgb_array(global_uploaded_image_data[img_index]['image_array'])
+                    });
+
 
                   global_toogle_original_channel = true
                   global_toogle_red_channel = true; //..........................
@@ -397,7 +428,7 @@ var texture = svg.append('defs')
 //......................................................................................
 //                        green channel button
 //.....................................................................................
-                    var green_circle = group1.append('circle')
+                    var green_circle = svg_group1.append('circle')
                     .attr('cx', icon_x0 +  2*icon_inter_space)
                     .attr('cy', icon_y0)
                     .attr('r',10)
@@ -556,7 +587,7 @@ var texture = svg.append('defs')
 //                        blue channel button
 //.....................................................................................
 
-var blue_circle = group1.append('circle')
+var blue_circle = svg_group1.append('circle')
                       .attr('cx', icon_x0 + 3 * icon_inter_space)
                       .attr('cy', icon_y0)
                       .attr('r',10)
@@ -720,7 +751,7 @@ var blue_circle = group1.append('circle')
   //                        grey channel button
   //.....................................................................................
 
-    var grey_circle = group1.append('circle')
+    var grey_circle = svg_group1.append('circle')
                       .attr('cx', icon_x0 + 4 * icon_inter_space)
                       .attr('cy', icon_y0)
                       .attr('r',10)
@@ -878,7 +909,7 @@ var blue_circle = group1.append('circle')
 //                ZOOM OUT
 //.....................................................................................
 
-    var zoom_out = group1.append("text")
+    var zoom_out = svg_group1.append("text")
                   .attr('x', icon_x0 + 5 * icon_inter_space)
                   .attr('y', icon_y0)
                   .attr("dy", ".35em")
@@ -997,7 +1028,7 @@ var blue_circle = group1.append('circle')
 //                ZOOM IN
 //.....................................................................................
 
-    var zoom_in = group1.append("text")
+    var zoom_in = svg_group1.append("text")
                   .attr('x', icon_x0 + 6 * icon_inter_space)
                   .attr('y', icon_y0)
                   .attr("dy", ".35em")
@@ -1105,7 +1136,7 @@ var blue_circle = group1.append('circle')
 //......................................................................................
 //               ORIGINAL IMAGE   (back to original image after zoom )
 //.....................................................................................
-var original_image_circle = group1.append('circle')
+var original_image_circle = svg_group1.append('circle')
                   .attr('cx', icon_x0 + 7 * icon_inter_space)
                   .attr('cy', icon_y0)
                   .attr('r',10)
@@ -1228,7 +1259,7 @@ var original_image_circle = group1.append('circle')
 //......................................................................................
 //                CLOSE  ICON   (upload image)
 //.....................................................................................
-    var close = group1.append("text")
+    var close = svg_group1.append("text")
                 .attr("x",  icon_x0 + 8 * icon_inter_space)
                 .attr('y', icon_y0)
                 .attr("dy", ".35em")
@@ -1256,7 +1287,7 @@ var original_image_circle = group1.append('circle')
                    var clicked_id = p.attr("id")
                    var img_index = parseInt(clicked_id.split('_')[1])
 
-                   var a = d3.selectAll('.group1')['_groups'][0]
+                   var a = d3.selectAll('.svg_group1')['_groups'][0]
                    var nodes_afters = []
                    var all_nodes = []
                    var to_delete = []
@@ -1289,8 +1320,8 @@ var original_image_circle = group1.append('circle')
                    d3.select("#upload-img-text-zoom-out-id_" + img_index).remove();
                    d3.select("#upload-img-text-close-id_" + img_index).remove();
 
-                  d3.selectAll(to_delete).each(function(d, i){  group3.node().appendChild(d3.select(this).node());  })
-                  d3.selectAll(nodes_afters).each(function(d, i){  group2.node().appendChild(d3.select(this).node());  })
+                  d3.selectAll(to_delete).each(function(d, i){  svg_group3.node().appendChild(d3.select(this).node());  })
+                  d3.selectAll(nodes_afters).each(function(d, i){  svg_group2.node().appendChild(d3.select(this).node());  })
 
                    global_shifht_nodes = true
 

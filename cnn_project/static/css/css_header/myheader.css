@@ -2,29 +2,50 @@
 @import url('myheader_reset.css');
 body {
 	background-color: #f0f0f0;
-	font-family: helvetica, "Times New Roman", Times, serif;
+	/*font-family: helvetica, "Times New Roman", Times, serif;*/
+	font-family: Verdana,"Times New Roman", Times, serif;
+		background-color: black;
 }
 
 nav {
   margin-top:-3.5%;
-  width:100%;
+  width:80%;
   padding:0;
   height: auto;;
   overflow: hidden;
   position: fixed; /* Set the navbar to fixed position */
+	display: flex;
+  justify-content: center;
+	background-color: black;
 }
+
+hr {
+	width:100%;
+	border-bottom:1px solid purple;
+	position:fixed;
+}
+
 a:focus {
 	outline: none;
 }
+
 .clear {
 	clear: both;
 }
+
 #page-wrap {
 	position: relative;
 	width: 100%;
 	margin-right: auto;
 	margin-left: auto;
 	margin-top: 50px;
+	display: flex;
+  justify-content: center;
+	background-color: black;
+}
+
+hr {
+		border-bottom:1px solid purple;
 }
 ul#main-nav {
 	margin-left: 20px;
@@ -33,7 +54,7 @@ ul#main-nav li {
 	float: left;
 	position: relative;
 	margin-left: -20px;
-	display: inline;
+	display: inline-block;;
 }
 ul#main-nav li a {
 	position: relative;
@@ -44,18 +65,20 @@ ul#main-nav li a {
 	background-position: center center;
 	color: #44403b;
 	text-decoration: none;
-	font-size: 14px;
+	font-size: 12px;
 	padding-top: 12px;
   margin-bottom:0;
 	text-align: left;
 	padding-left: 30px;
 	font-weight: bold;
   font-family: "Georgia, serif";
-  color:white;
+  color:black;
   text-align: left;
 }
 ul#main-nav li.home a {
 	background-image: url('/static/images/img_header/tab-home.png');
+	color:black;
+		font-size: 12px;
 }
 ul#main-nav li.current a {
 	background-position: top;
@@ -183,4 +206,42 @@ ul#main-nav li.contact {
 /* Add some hover effects to buttons */
 .form-container .btn:hover, .open-button:hover {
   opacity: 1;
+}
+
+/*    footer */
+.footer-container{
+	position:absolute;
+	bottom:0.5%;
+	width:100%;
+	padding:0;
+	height: auto;;
+	overflow: hidden;
+	position: fixed; /* Set the footer to fixed position */
+	background-color: grey;
+}
+
+/* Image */
+
+#upload-image-container {
+  width:100%;
+  height:auto;
+  padding:0;
+	border:1px solid orange;
+}
+
+
+#uploaded-images-group{
+  display:inline-block;
+  width:420px;
+  height:auto;
+  border:5px solid blue;
+}
+
+#uploaded-images-console{
+  display:inline-block;
+  width:69%;
+  height:auto;
+	padding:0;
+  border:1px solid yellow;
+	vertical-align: top;
 }
